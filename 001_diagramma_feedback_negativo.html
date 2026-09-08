@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagramma di Flusso: Feedback Negativo Temperatura-Nubi</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @keyframes pulseGlowEmerald {
+            0%, 100% {
+                box-shadow: 0 0 15px rgba(16, 185, 129, 0.35), inset 0 0 10px rgba(16, 185, 129, 0.15);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(16, 185, 129, 0.75), inset 0 0 15px rgba(16, 185, 129, 0.35);
+            }
+        }
+        .active-pulse-emerald {
+            animation: pulseGlowEmerald 1.8s infinite ease-in-out;
+        }
+        .flow-line {
+            stroke-dasharray: 8, 8;
+            animation: flowDash 1.2s linear infinite;
+        }
+        @keyframes flowDash {
+            to {
+                stroke-dashoffset: -16;
+            }
+        }
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center p-4 md:p-8">
+
+    <header class="max-w-5xl w-full text-center mb-8">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            Scienze della Terra • Meccanismi di Termoregolazione
+        </div>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">
+            Ciclo di Retroazione Negativa: <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-emerald-400 to-cyan-400">Temperatura - Nubi</span>
+        </h1>
+        <p class="text-slate-400 text-sm md:text-base max-w-2xl mx-auto mt-2">
+            Rappresentazione ciclica del meccanismo auto-stabilizzante in cui la risposta del sistema contrasta la perturbazione iniziale, favorendo l'omeostasi termica del pianeta.
+        </p>
+    </header>
+
+    <div class="max-w-5xl w-full mb-8 flex flex-wrap items-center justify-between gap-4 bg-slate-800/80 backdrop-blur border border-slate-700/80 p-4 rounded-2xl shadow-xl no-print">
+        <div class="flex items-center gap-2">
+            <button id="btn-play" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-sm font-semibold rounded-xl shadow-lg transition-all">
+                <svg id="icon-play" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4l12 6-12 6z"/></svg>
+                <span id="label-play">Avvia Animazione Ciclica</span>
+            </button>
+            <button id="btn-step" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-sm font-semibold rounded-xl transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+                <span>Avanza Passo</span>
+            </button>
+            <button id="btn-reset" class="px-3 py-2 text-slate-400 hover:text-slate-100 text-sm font-medium rounded-xl hover:bg-slate-750 transition-colors">
+                Ripristina
+            </button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-400 font-medium">Fase attiva:</span>
+            <div id="step-indicators" class="flex items-center gap-1.5">
+                <span class="step-dot w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-emerald-400/40 transition-all" data-step="1"></span>
+                <span class="step-dot w-3 h-3 rounded-full bg-slate-600 transition-all" data-step="2"></span>
+                <span class="step-dot w-3 h-3 rounded-full bg-slate-600 transition-all" data-step="3"></span>
+                <span class="step-dot w-3 h-3 rounded-full bg-slate-600 transition-all" data-step="4"></span>
+            </div>
+            <button onclick="window.print()" class="ml-2 px-3 py-2 bg-slate-750 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-xl border border-slate-600 transition-colors flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                Stampa / PDF
+            </button>
+        </div>
+    </div>
+
+    <main class="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Canvas / Schema del diagramma circolare (7 colonne) -->
+        <div class="lg:col-span-7 bg-slate-800/50 border border-slate-700/80 rounded-3xl p-6 relative shadow-2xl overflow-hidden flex flex-col items-center">
+            
+            <!-- Etichetta centrale del loop: Retroazione Negativa -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="w-44 h-44 rounded-full border-2 border-dashed border-emerald-500/30 bg-emerald-950/20 backdrop-blur-sm flex flex-col items-center justify-center text-center p-4">
+                    <span class="text-3xl font-black text-emerald-400">(-)</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Retroazione Negativa</span>
+                    <span class="text-[10px] text-emerald-400/80 mt-0.5">Meccanismo di Omeostasi</span>
+                    <span class="text-[9px] text-slate-400 mt-1 italic">Contrasta la perturbazione</span>
+                </div>
+            </div>
+
+            <!-- SVG delle frecce di collegamento tra i blocchi -->
+            <svg class="w-full max-w-[480px] h-[480px] relative z-0" viewBox="0 0 500 500">
+                <defs>
+                    <marker id="arrow-emerald" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="#10b981" />
+                    </marker>
+                    <marker id="arrow-stabilizing" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+                        <polygon points="0 0, 8 4, 0 8" fill="#06b6d4" />
+                    </marker>
+                </defs>
+
+                <!-- Arco 1 -> 2 (Alto -> Destra) -->
+                <path id="path-1-2" d="M 330 90 C 430 90, 430 170, 430 230" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow-emerald)" />
+                <!-- Arco 2 -> 3 (Destra -> Basso) -->
+                <path id="path-2-3" d="M 430 330 C 430 410, 350 410, 270 410" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow-emerald)" />
+                <!-- Arco 3 -> 4 (Basso -> Sinistra) -->
+                <path id="path-3-4" d="M 170 410 C 70 410, 70 330, 70 270" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow-emerald)" />
+                <!-- Arco 4 -> 1 (Sinistra -> Alto - RITORNO ATTENUANTE) -->
+                <path id="path-4-1" d="M 70 170 C 70 90, 150 90, 170 90" fill="none" stroke="#475569" stroke-width="3" marker-end="url(#arrow-stabilizing)" />
+            </svg>
+
+            <!-- NODO 1: Perturbazione Iniziale (In Alto) -->
+            <div id="node-1" onclick="selectStep(1)" class="node-card cursor-pointer absolute top-4 left-1/2 -translate-x-1/2 w-64 p-3.5 rounded-2xl bg-slate-800 border-2 border-emerald-500 shadow-lg shadow-emerald-950/50 transition-all duration-300 z-10 active-pulse-emerald">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-xl font-bold">
+                        🌡️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300">FASE 1</span>
+                            <span class="text-[10px] text-slate-400">Atmosfera</span>
+                        </div>
+                        <h3 class="font-bold text-xs md:text-sm text-white leading-snug">Aumento Temp. Globale</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NODO 2: Maggiore Evaporazione (A Destra) -->
+            <div id="node-2" onclick="selectStep(2)" class="node-card cursor-pointer absolute top-1/2 -translate-y-1/2 right-2 md:right-4 w-56 p-3.5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-cyan-500/50 shadow-lg transition-all duration-300 z-10 opacity-75">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-xl font-bold">
+                        🌊
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300">FASE 2</span>
+                            <span class="text-[10px] text-slate-400">Idrosfera</span>
+                        </div>
+                        <h3 class="font-bold text-xs md:text-sm text-white leading-snug">Maggiore Evaporazione</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NODO 3: Aumento Copertura Nuvolosa (In Basso) -->
+            <div id="node-3" onclick="selectStep(3)" class="node-card cursor-pointer absolute bottom-4 left-1/2 -translate-x-1/2 w-64 p-3.5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-indigo-500/50 shadow-lg transition-all duration-300 z-10 opacity-75">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center text-xl font-bold">
+                        ☁️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">FASE 3</span>
+                            <span class="text-[10px] text-slate-400">Atmosfera</span>
+                        </div>
+                        <h3 class="font-bold text-xs md:text-sm text-white leading-snug">Aumento Nubi (Albedo)</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NODO 4: Riflessione e Raffreddamento (A Sinistra) -->
+            <div id="node-4" onclick="selectStep(4)" class="node-card cursor-pointer absolute top-1/2 -translate-y-1/2 left-2 md:left-4 w-56 p-3.5 rounded-2xl bg-slate-800 border-2 border-slate-700 hover:border-teal-500/50 shadow-lg transition-all duration-300 z-10 opacity-75">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-teal-500/20 text-teal-400 flex items-center justify-center text-xl font-bold">
+                        🛡️
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300">FASE 4</span>
+                            <span class="text-[10px] text-slate-400">Bilancio Radiativo</span>
+                        </div>
+                        <h3 class="font-bold text-xs md:text-sm text-white leading-snug">Raffreddamento Superficie</h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="lg:col-span-5 flex flex-col gap-5">
+
+            <!-- Scheda di dettaglio della fase attiva -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                <div class="flex items-center justify-between mb-3">
+                    <span id="detail-tag" class="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                        Fase 1: Perturbazione Iniziale
+                    </span>
+                    <span id="detail-sphere" class="text-xs text-slate-400 font-medium">Sfera: Atmosfera</span>
+                </div>
+                <h2 id="detail-title" class="text-xl font-bold text-white mb-2">Aumento della Temperatura Globale</h2>
+                <p id="detail-desc" class="text-sm text-slate-300 leading-relaxed mb-4">
+                    Un aumento della temperatura media atmosferica fornisce maggiore energia cinetica alle molecole, potenziando la capacità termica dell'aria di trattenere vapore acqueo (equazione di Clausius-Clapeyron).
+                </p>
+
+                <!-- Box causa ed effetto successivo -->
+                <div class="bg-slate-900/70 border border-slate-700/60 rounded-xl p-3 text-xs flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        &rarr;
+                    </div>
+                    <div>
+                        <span class="font-semibold text-slate-200">Conseguenza diretta:</span>
+                        <p id="detail-consequence" class="text-slate-400 mt-0.5">Le masse d'acqua oceaniche si riscaldano e il tasso di evaporazione superficiale subisce una rapida impennata.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quadro comparativo: L'effetto Albedo delle Nubi -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-cyan-400" fill="currentColor" viewBox="0 0 20 20"><path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z"/></svg>
+                        Focus Fisico: L'Effetto Schermo delle Nubi
+                    </h3>
+                    <span class="text-[11px] text-slate-400 font-mono">Schermatura Solare</span>
+                </div>
+                <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                    Le nubi dense a bassa e media quota (come strati e cumuli) possiedono un'<strong>elevatissima riflettanza solare</strong>. Agiscono come uno specchio naturale respingendo gran parte dei fotoni solari prima che tocchino la superficie.
+                </p>
+
+                <!-- Barra comparativa interattiva -->
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-indigo-300 flex items-center gap-1">☁️ Nubi dense a bassa quota</span>
+                            <span class="text-indigo-300 font-mono">Albedo ~60% - 80%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-700 rounded-full overflow-hidden flex">
+                            <div class="bg-indigo-400 h-full" style="width: 70%"></div>
+                            <div class="bg-amber-500 h-full" style="width: 30%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                            <span class="text-indigo-300 font-semibold">70% Riflessa nello spazio</span>
+                            <span>30% Raggiunge il suolo</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1">
+                            <span class="text-amber-300 flex items-center gap-1">☀️ Cielo Sereno / Superficie Oceanica</span>
+                            <span class="text-amber-400 font-mono">Riflessione ~6% - 10%</span>
+                        </div>
+                        <div class="w-full h-3 bg-slate-700 rounded-full overflow-hidden flex">
+                            <div class="bg-indigo-400 h-full" style="width: 8%"></div>
+                            <div class="bg-amber-500 h-full" style="width: 92%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-0.5">
+                            <span>8% Riflessa</span>
+                            <span class="text-amber-400 font-bold">92% Assorbita dal suolo/mare</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sintesi per il Liceo / Note didattiche -->
+            <div class="bg-emerald-950/30 border border-emerald-800/40 rounded-2xl p-4 text-xs text-emerald-200">
+                <div class="font-bold flex items-center gap-1.5 mb-1 text-emerald-300">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Perché è un circolo "stabilizzante" (Omeostasi)?
+                </div>
+                <p class="leading-relaxed">
+                    A differenza dei feedback positivi (che spingono il sistema verso estremi instabili), la retroazione <strong>negativa</strong> agisce come un termostato naturale: risponde a un riscaldamento producendo un'azione di raffreddamento, riportando le condizioni globali verso l'<strong>equilibrio dinamico</strong>.
+                </p>
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+        // Dati strutturati delle 4 fasi della retroazione negativa
+        const stepData = {
+            1: {
+                tag: "Fase 1: Perturbazione Termica",
+                tagClass: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+                sphere: "Sfera: Atmosfera",
+                title: "Aumento della Temperatura Globale",
+                desc: "Un incremento termico iniziale nella troposfera apporta energia termica al sistema planetario, riscaldando sia l'aria che lo strato superficiale degli oceani.",
+                consequence: "L'acqua oceanica riceve calore e aumenta sensibilmente la tensione di vapore alla superficie.",
+                activePath: "path-1-2"
+            },
+            2: {
+                tag: "Fase 2: Risposta dell'Idrosfera",
+                tagClass: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+                sphere: "Sfera: Idrosfera",
+                title: "Maggiore Evaporazione dagli Oceani",
+                desc: "Con temperature più elevate, il tasso di evaporazione dell'acqua marina subisce una marcata accelerazione. Enormi quantità di vapore acqueo salgono negli strati troposferici.",
+                consequence: "L'aria umida ascensionale si raffredda adiabaticamente raggiungendo la saturazione.",
+                activePath: "path-2-3"
+            },
+            3: {
+                tag: "Fase 3: Condensazione e Albedo",
+                tagClass: "bg-indigo-500/20 text-indigo-300 border-indigo-500/30",
+                sphere: "Sfera: Atmosfera",
+                title: "Aumento della Copertura Nuvolosa",
+                desc: "Il vapore condensa attorno ai nuclei di condensazione formando estesi banchi di nubi basse e stratiformi. Le sommità bianche aumentano drasticamente l'albedo planetario.",
+                consequence: "Una quota consistente della radiazione solare a onde corte viene intercettata e riflessa direttamente verso lo spazio.",
+                activePath: "path-3-4"
+            },
+            4: {
+                tag: "Fase 4: Chiusura del Ciclo Negativo",
+                tagClass: "bg-teal-500/20 text-teal-300 border-teal-500/30",
+                sphere: "Bilancio Radiativo Terrestre",
+                title: "Raffreddamento della Superficie (Attenuazione)",
+                desc: "Giungendo meno radiazione solare diretta al suolo e sugli oceani, la superficie terrestre si raffredda. L'effetto finale contrasta direttamente la perturbazione iniziale della Fase 1!",
+                consequence: "La temperatura globale scende o rallenta la sua ascesa: il sistema ritrova la stabilità (feedback negativo).",
+                activePath: "path-4-1"
+            }
+        };
+
+        let currentStep = 1;
+        let isPlaying = false;
+        let intervalId = null;
+
+        // Elementi DOM
+        const detailTag = document.getElementById('detail-tag');
+        const detailSphere = document.getElementById('detail-sphere');
+        const detailTitle = document.getElementById('detail-title');
+        const detailDesc = document.getElementById('detail-desc');
+        const detailConsequence = document.getElementById('detail-consequence');
+        const btnPlay = document.getElementById('btn-play');
+        const labelPlay = document.getElementById('label-play');
+        const iconPlay = document.getElementById('icon-play');
+        const btnStep = document.getElementById('btn-step');
+        const btnReset = document.getElementById('btn-reset');
+        const stepDots = document.querySelectorAll('.step-dot');
+
+        const allPaths = ['path-1-2', 'path-2-3', 'path-3-4', 'path-4-1'];
+
+        // Funzione per aggiornare la visualizzazione del passo corrente
+        function selectStep(step) {
+            currentStep = step;
+            const data = stepData[step];
+
+            // 1. Aggiorna dettagli testuali
+            detailTag.textContent = data.tag;
+            detailTag.className = `text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded border ${data.tagClass}`;
+            detailSphere.textContent = data.sphere;
+            detailTitle.textContent = data.title;
+            detailDesc.textContent = data.desc;
+            detailConsequence.textContent = data.consequence;
+
+            // 2. Aggiorna nodi nel diagramma
+            for (let i = 1; i <= 4; i++) {
+                const node = document.getElementById(`node-${i}`);
+                if (i === step) {
+                    node.classList.remove('opacity-75', 'border-slate-700');
+                    node.classList.add('border-emerald-500', 'active-pulse-emerald');
+                } else {
+                    node.classList.add('opacity-75', 'border-slate-700');
+                    node.classList.remove('border-emerald-500', 'active-pulse-emerald');
+                }
+            }
+
+            // 3. Aggiorna frecce SVG animate
+            allPaths.forEach(pathId => {
+                const pathEl = document.getElementById(pathId);
+                if (pathId === data.activePath) {
+                    pathEl.setAttribute('stroke', pathId === 'path-4-1' ? '#06b6d4' : '#10b981');
+                    pathEl.setAttribute('stroke-width', '4');
+                    pathEl.classList.add('flow-line');
+                } else {
+                    pathEl.setAttribute('stroke', '#334155');
+                    pathEl.setAttribute('stroke-width', '2.5');
+                    pathEl.classList.remove('flow-line');
+                }
+            });
+
+            // 4. Aggiorna indicatori a pallini
+            stepDots.forEach(dot => {
+                const dotStep = parseInt(dot.getAttribute('data-step'), 10);
+                if (dotStep === step) {
+                    dot.classList.remove('bg-slate-600');
+                    dot.classList.add('bg-emerald-500', 'ring-2', 'ring-emerald-400/40');
+                } else {
+                    dot.classList.add('bg-slate-600');
+                    dot.classList.remove('bg-emerald-500', 'ring-2', 'ring-emerald-400/40');
+                }
+            });
+        }
+
+        // Funzione per avanzare al prossimo step
+        function nextStep() {
+            let next = currentStep + 1;
+            if (next > 4) next = 1;
+            selectStep(next);
+        }
+
+        // Toggle animazione automatica
+        function togglePlay() {
+            if (isPlaying) {
+                clearInterval(intervalId);
+                isPlaying = false;
+                labelPlay.textContent = "Avvia Animazione Ciclica";
+                iconPlay.innerHTML = '<path d="M4 4l12 6-12 6z"/>';
+                btnPlay.classList.replace('bg-teal-600', 'bg-emerald-600');
+            } else {
+                isPlaying = true;
+                labelPlay.textContent = "Pausa Animazione";
+                iconPlay.innerHTML = '<path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/>';
+                btnPlay.classList.replace('bg-emerald-600', 'bg-teal-600');
+                intervalId = setInterval(nextStep, 2500);
+            }
+        }
+
+        // Event Listeners
+        btnPlay.addEventListener('click', togglePlay);
+        btnStep.addEventListener('click', () => {
+            if (isPlaying) togglePlay();
+            nextStep();
+        });
+        btnReset.addEventListener('click', () => {
+            if (isPlaying) togglePlay();
+            selectStep(1);
+        });
+
+        // Inizializza al primo passo
+        selectStep(1);
+    </script>
+</body>
+</html>
