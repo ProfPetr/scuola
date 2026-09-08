@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scheda Interattiva: Angolo Orientato</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for formula rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom scrollbar and range slider styling */
+    input[type=range] {
+      accent-color: #4f46e5;
+    }
+    .badge-glow {
+      box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.5);
+      border-radius: 9999px;
+    }
+    canvas {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30 px-4 sm:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white font-bold shadow-lg shadow-indigo-500/30">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            L'Angolo Orientato
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Goniometria Elementare</span>
+          </h1>
+          <p class="text-xs text-slate-400">Rotazione, convenzione di segno, multipli di giro e misura dell'arco</p>
+        </div>
+      </div>
+
+      <!-- Unit Selector Toggle -->
+      <div class="flex items-center bg-slate-800/90 p-1.5 rounded-2xl border border-slate-700/80 shadow-inner">
+        <span class="text-xs font-medium text-slate-400 mr-2.5 ml-1">Misura in:</span>
+        <div class="relative flex items-center">
+          <button id="btn-unit-deg" onclick="setUnit('deg')" class="relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30">
+            Gradi (°)
+          </button>
+          <button id="btn-unit-rad" onclick="setUnit('rad')" class="relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white">
+            Radianti (rad)
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- Interactive Canvas & Control Box (Left/Top on Large screens) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      <div class="bg-slate-800/50 border border-slate-700/70 rounded-3xl p-4 sm:p-5 relative overflow-hidden backdrop-blur-sm shadow-xl">
+        <!-- Interactive Badges & Overlay Tools -->
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center space-x-2">
+            <span id="direction-indicator" class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              Verso Antiorario (+)
+            </span>
+            <span id="turns-counter" class="text-xs font-medium px-2.5 py-1 rounded-full bg-slate-700 text-slate-300 border border-slate-600">
+              0 giri completi
+            </span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="resetAngle()" title="Reimposta a 0°" class="px-2.5 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition flex items-center gap-1.5 text-xs">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Azzera</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="relative w-full aspect-square max-h-[460px] mx-auto bg-slate-950/60 rounded-2xl border border-slate-800/80 overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing">
+          <canvas id="trigCanvas" class="w-full h-full block"></canvas>
+          <div class="absolute bottom-2.5 left-3 pointer-events-none text-[11px] text-slate-500 font-mono">
+            Trascina il punto P sul cerchio per ruotare
+          </div>
+        </div>
+
+        <!-- Slider & Fine Tuning Controls -->
+        <div class="mt-4 pt-4 border-t border-slate-700/60 space-y-3">
+          <div class="flex items-center justify-between">
+            <label for="angle-slider" class="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              Regola Angolo (<span id="slider-unit-label">Gradi</span>)
+            </label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="manual-angle-input" step="any" class="w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-right text-sm font-mono text-indigo-300 focus:outline-none focus:ring-1 focus:ring-indigo-500 font-semibold" value="45">
+              <span id="input-unit-symbol" class="text-sm text-slate-400 font-mono">°</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono text-slate-500">-720°</span>
+            <input type="range" id="angle-slider" min="-720" max="720" step="1" value="45" class="w-full h-2 bg-slate-700 rounded-lg cursor-pointer">
+            <span class="text-xs font-mono text-slate-500">+720°</span>
+          </div>
+
+          <!-- Quick Presets -->
+          <div class="flex flex-wrap items-center gap-1.5 pt-1">
+            <span class="text-xs text-slate-400 mr-1">Preimpostati:</span>
+            <button onclick="setAngle(0)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">0°</button>
+            <button onclick="setAngle(30)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">30° (π/6)</button>
+            <button onclick="setAngle(45)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">45° (π/4)</button>
+            <button onclick="setAngle(90)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">90° (π/2)</button>
+            <button onclick="setAngle(180)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">180° (π)</button>
+            <button onclick="setAngle(270)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">270° (3π/2)</button>
+            <button onclick="setAngle(360)" class="px-2.5 py-1 text-xs rounded-lg bg-slate-700/60 hover:bg-indigo-600 text-slate-200 transition font-mono">360° (2π)</button>
+            <button onclick="setAngle(-90)" class="px-2.5 py-1 text-xs rounded-lg bg-rose-900/40 border border-rose-700/40 hover:bg-rose-600 text-rose-200 transition font-mono">-90°</button>
+            <button onclick="setAngle(-180)" class="px-2.5 py-1 text-xs rounded-lg bg-rose-900/40 border border-rose-700/40 hover:bg-rose-600 text-rose-200 transition font-mono">-180°</button>
+            <button onclick="setAngle(450)" class="px-2.5 py-1 text-xs rounded-lg bg-amber-900/40 border border-amber-700/40 hover:bg-amber-600 text-amber-200 transition font-mono">450° (&gt;360°)</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Real-Time Card -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="bg-slate-800/40 border border-slate-800 p-3 rounded-2xl">
+          <p class="text-[11px] font-medium text-slate-400">Misura in Gradi</p>
+          <p id="val-degrees" class="text-lg font-bold font-mono text-cyan-400 mt-0.5">45.0°</p>
+          <span id="val-equivalent-deg" class="text-[10px] text-slate-500 font-mono">mod 360°: 45°</span>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-800 p-3 rounded-2xl">
+          <p class="text-[11px] font-medium text-slate-400">Misura in Radianti</p>
+          <p id="val-radians" class="text-lg font-bold font-mono text-indigo-400 mt-0.5">0.785 rad</p>
+          <span id="val-radians-pi" class="text-[10px] text-indigo-300/80 font-mono">≈ π/4</span>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-800 p-3 rounded-2xl">
+          <p class="text-[11px] font-medium text-slate-400">Frazione di Giro</p>
+          <p id="val-turn-fraction" class="text-lg font-bold font-mono text-emerald-400 mt-0.5">1/8 di giro</p>
+          <span id="val-turn-decimal" class="text-[10px] text-slate-500 font-mono">+0.125 giri</span>
+        </div>
+        <div class="bg-slate-800/40 border border-slate-800 p-3 rounded-2xl">
+          <p class="text-[11px] font-medium text-slate-400">Arco Rettificato ($r=1$)</p>
+          <p id="val-arc-length" class="text-lg font-bold font-mono text-amber-400 mt-0.5">0.785</p>
+          <span class="text-[10px] text-slate-500">Lunghezza traiettoria circolare</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Didactic Explanations & Theory (Right/Bottom on Large screens) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      <!-- Core Concept Card -->
+      <div class="bg-slate-800/50 border border-slate-700/70 rounded-3xl p-5 backdrop-blur-sm">
+        <h2 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+          <span class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </span>
+          Cos'è un Angolo Orientato?
+        </h2>
+        <div class="space-y-2.5 text-xs leading-relaxed text-slate-300">
+          <p>
+            In geometria piana elementare l'angolo è una figura statica compresa tra due semirette. Quando introduciamo il concetto di <strong>orientamento</strong>, l'angolo diventa la misura di una <strong>rotazione</strong>:
+          </p>
+          <ul class="space-y-2 pl-2">
+            <li class="flex items-start gap-2">
+              <span class="text-cyan-400 font-bold">•</span>
+              <span><strong>Primo lato (Origine della rotazione):</strong> fissato per convenzione sul semiasse positivo delle ascisse $Ox$.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-indigo-400 font-bold">•</span>
+              <span><strong>Secondo lato (Termine della rotazione):</strong> la semiretta $OP$ ottenuta ruotando l'origine attorno al vertice $O$.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-bold">•</span>
+              <span><strong>Verso Antiorario (Sinistrorso o Sinistrogiro):</strong> la rotazione procede da destra verso sinistra nella parte superiore; è considerato per convenzione standard <span class="text-emerald-400 font-bold uppercase">positivo (+)</span>.</span>
+            </li>
+            <li class="flex items-start gap-2">
+              <span class="text-rose-400 font-bold">•</span>
+              <span><strong>Verso Orario (Destrorso o Destrogiro):</strong> segue il moto delle lancette (da sinistra verso destra in alto); è considerato <span class="text-rose-400 font-bold uppercase">negativo (-)</span>.</span>
+            </li>
+          </ul>
+
+          <div class="mt-3 p-2.5 bg-slate-900/70 border border-slate-700/80 rounded-xl text-[11px] text-slate-400 leading-normal">
+            <strong class="text-amber-300">Nota terminologica:</strong> talvolta si genera confusione con la <em>terna cartesiana destrorsa</em> (regola della mano destra in 3D), in cui la rotazione da $+x$ a $+y$ appare antioraria. Sul piano 2D, tuttavia, il moto orario è geometricamente <strong>destrorso</strong> e quello antiorario è <strong>sinistrorso</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- Conversion & Formula Card with KaTeX -->
+      <div class="bg-slate-800/50 border border-slate-700/70 rounded-3xl p-5 backdrop-blur-sm">
+        <h2 class="text-base font-bold text-white flex items-center gap-2 mb-3">
+          <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </span>
+          Conversione Gradi $\leftrightarrow$ Radianti
+        </h2>
+
+        <div class="text-xs text-slate-300 space-y-3">
+          <p>
+            Il <strong>radiante</strong> è l'angolo al centro che sottende un arco di lunghezza pari al raggio. Poiché l'intera circonferenza vale $C = 2\pi r$, un angolo giro ($360^\circ$) corrisponde a $2\pi$ radianti:
+          </p>
+
+          <div class="p-3 bg-slate-900/80 rounded-xl border border-slate-800 text-center font-mono text-sm" id="formula-proportion">
+            <!-- KaTeX rendered formula -->
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-center text-xs font-mono">
+            <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
+              <span class="text-slate-400 block text-[10px] font-sans">Da Gradi a Radianti</span>
+              <div id="formula-deg2rad" class="mt-1 text-cyan-300"></div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-slate-900/50 border border-slate-800">
+              <span class="text-slate-400 block text-[10px] font-sans">Da Radianti a Gradi</span>
+              <div id="formula-rad2deg" class="mt-1 text-indigo-300"></div>
+            </div>
+          </div>
+
+          <!-- Dynamic calculation step -->
+          <div class="mt-3 p-3 bg-indigo-950/30 border border-indigo-800/40 rounded-xl">
+            <span class="text-[11px] font-semibold text-indigo-300 uppercase tracking-wider block mb-1">Calcolo in tempo reale dell'angolo attuale:</span>
+            <div id="live-conversion-step" class="font-mono text-xs text-slate-200">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multiple Rotations & Coterminal Angles Card -->
+      <div class="bg-slate-800/50 border border-slate-700/70 rounded-3xl p-5 backdrop-blur-sm">
+        <h2 class="text-base font-bold text-white flex items-center gap-2 mb-2">
+          <span class="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          </span>
+          Angoli Associati e Multipli di Giro
+        </h2>
+        <div class="text-xs text-slate-300 space-y-2">
+          <p>
+            Due angoli orientati che hanno lo stesso lato origine e lo stesso lato termine si dicono <strong>co-terminali</strong> o equivalenti. Differiscono per un numero intero di giri $k \in \mathbb{Z}$:
+          </p>
+          <div class="p-2.5 bg-slate-900/80 rounded-xl border border-slate-800 text-center font-mono" id="formula-coterminal">
+            <!-- KaTeX -->
+          </div>
+          <div class="mt-2 flex items-center justify-between text-xs pt-1">
+            <span class="text-slate-400">Quadrante attuale:</span>
+            <span id="quadrant-display" class="font-bold text-indigo-300 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-800/50">I Quadrante</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Educational Notable Angles Table Footer Modal or Section -->
+  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="bg-slate-800/40 border border-slate-800 rounded-3xl p-5">
+      <h3 class="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
+        <span>Tavola degli Angoli Notevoli Fondamentali</span>
+      </h3>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-xs text-left text-slate-300">
+          <thead class="text-[11px] uppercase bg-slate-900/60 text-slate-400">
+            <tr>
+              <th scope="col" class="px-3 py-2.5 rounded-l-xl">Gradi (°)</th>
+              <th scope="col" class="px-3 py-2.5">Radianti (rad)</th>
+              <th scope="col" class="px-3 py-2.5">Coseno ($\cos \alpha$)</th>
+              <th scope="col" class="px-3 py-2.5">Seno ($\sin \alpha$)</th>
+              <th scope="col" class="px-3 py-2.5 rounded-r-xl">Azione Rapida</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">0°</td>
+              <td class="px-3 py-2">0</td>
+              <td class="px-3 py-2">1</td>
+              <td class="px-3 py-2">0</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(0)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">30°</td>
+              <td class="px-3 py-2">$\frac{\pi}{6}$</td>
+              <td class="px-3 py-2">$\frac{\sqrt{3}}{2} \approx 0.866$</td>
+              <td class="px-3 py-2">$\frac{1}{2} = 0.5$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(30)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">45°</td>
+  <!-- Educational Notable Angles Table Footer -->
+  <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+    <div class="bg-slate-800/40 border border-slate-800 rounded-3xl p-5">
+      <h3 class="text-sm font-bold text-slate-200 mb-3 flex items-center gap-2">
+        <span>Tavola degli Angoli Notevoli Fondamentali</span>
+      </h3>
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-xs text-left text-slate-300">
+          <thead class="text-[11px] uppercase bg-slate-900/60 text-slate-400">
+            <tr>
+              <th scope="col" class="px-3 py-2.5 rounded-l-xl">Gradi (°)</th>
+              <th scope="col" class="px-3 py-2.5">Radianti (rad)</th>
+              <th scope="col" class="px-3 py-2.5">Frazione di Giro</th>
+              <th scope="col" class="px-3 py-2.5">Posizione Geometrica</th>
+              <th scope="col" class="px-3 py-2.5 rounded-r-xl">Azione Rapida</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 font-mono text-[11px]">
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">0°</td>
+              <td class="px-3 py-2">0</td>
+              <td class="px-3 py-2">0 giri</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Semiasse positivo $Ox$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(0)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">30°</td>
+              <td class="px-3 py-2">$\frac{\pi}{6}$</td>
+              <td class="px-3 py-2">$\frac{1}{12}$ di giro</td>
+              <td class="px-3 py-2 font-sans text-slate-400">I Quadrante</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(30)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">45°</td>
+              <td class="px-3 py-2">$\frac{\pi}{4}$</td>
+              <td class="px-3 py-2">$\frac{1}{8}$ di giro</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Bisettrice I Quadrante</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(45)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">60°</td>
+              <td class="px-3 py-2">$\frac{\pi}{3}$</td>
+              <td class="px-3 py-2">$\frac{1}{6}$ di giro</td>
+              <td class="px-3 py-2 font-sans text-slate-400">I Quadrante</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(60)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">90°</td>
+              <td class="px-3 py-2">$\frac{\pi}{2}$</td>
+              <td class="px-3 py-2">$\frac{1}{4}$ di giro (Angolo retto)</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Semiasse positivo $Oy$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(90)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">180°</td>
+              <td class="px-3 py-2">$\pi$</td>
+              <td class="px-3 py-2">$\frac{1}{2}$ di giro (Angolo piatto)</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Semiasse negativo $Ox$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(180)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">270°</td>
+              <td class="px-3 py-2">$\frac{3\pi}{2}$</td>
+              <td class="px-3 py-2">$\frac{3}{4}$ di giro</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Semiasse negativo $Oy$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(270)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="px-3 py-2 text-cyan-400 font-bold">360°</td>
+              <td class="px-3 py-2">$2\pi$</td>
+              <td class="px-3 py-2">1 giro completo</td>
+              <td class="px-3 py-2 font-sans text-slate-400">Coincidente con $0^\circ$</td>
+              <td class="px-3 py-2 font-sans"><button onclick="setAngle(360)" class="text-indigo-400 hover:underline">Imposta</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // State management
+    let state = {
+      angleDeg: 45,            // can be any continuous float (-720 to 720+)
+      unit: 'deg',            // 'deg' or 'rad'
+      isDragging: false,
+      lastDragAngle: null,
+      radius: 140,            // dynamically calculated in pixels
+      center: { x: 0, y: 0 }
+    };
+
+    const canvas = document.getElementById('trigCanvas');
+    const ctx = canvas.getContext('2d');
+    const angleSlider = document.getElementById('angle-slider');
+    const manualInput = document.getElementById('manual-angle-input');
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
+      
+      state.center.x = rect.width / 2;
+      state.center.y = rect.height / 2;
+      // Leave comfortable margin for axes, labels, and multiple spiral laps
+      state.radius = Math.min(rect.width, rect.height) * 0.36;
+      
+      draw();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function degToRad(deg) {
+      return deg * (Math.PI / 180);
+    }
+
+    function radToDeg(rad) {
+      return rad * (180 / Math.PI);
+    }
+
+    // Convert decimal to simplified fraction of PI
+    function toPiFraction(degrees) {
+      const sign = degrees < 0 ? "-" : "";
+      const absDeg = Math.abs(degrees);
+      
+      if (absDeg === 0) return "0 rad";
+      
+      const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+      const num = Math.round(absDeg);
+      const den = 180;
+      const divisor = gcd(num, den);
+      
+      const n = num / divisor;
+      const d = den / divisor;
+      
+      if (d === 1) {
+        return `${sign}${n === 1 ? 'π' : n + 'π'} rad`;
+      }
+      return `${sign}${n === 1 ? 'π' : n + 'π'}/${d} rad`;
+    }
+
+    // Compute fraction of a full turn (360 deg)
+    function toTurnFraction(degrees) {
+      const absDeg = Math.abs(degrees);
+      if (absDeg === 0) return "0 giri";
+      const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+      const num = Math.round(absDeg);
+      const den = 360;
+      const divisor = gcd(num, den);
+      const n = num / divisor;
+      const d = den / divisor;
+      const sign = degrees < 0 ? "-" : "";
+      if (d === 1) return `${sign}${n} ${n === 1 ? 'giro' : 'giri'}`;
+      return `${sign}${n}/${d} di giro`;
+    }
+
+    function updateUI() {
+      const deg = state.angleDeg;
+      const rad = degToRad(deg);
+
+      // Degree & Radian readouts
+      document.getElementById('val-degrees').textContent = `${deg.toFixed(1)}°`;
+      document.getElementById('val-radians').textContent = `${rad.toFixed(3)} rad`;
+      document.getElementById('val-radians-pi').textContent = `≈ ${toPiFraction(deg)}`;
+
+      // Equivalent angle in [0, 360)
+      let modDeg = ((deg % 360) + 360) % 360;
+      document.getElementById('val-equivalent-deg').textContent = `mod 360°: ${modDeg.toFixed(1)}°`;
+
+      // Fraction of turn & Arc length (with r = 1)
+      document.getElementById('val-turn-fraction').textContent = toTurnFraction(deg);
+      const turnDec = deg / 360;
+      document.getElementById('val-turn-decimal').textContent = (turnDec >= 0 ? '+' : '') + turnDec.toFixed(3) + ' giri';
+      document.getElementById('val-arc-length').textContent = Math.abs(rad).toFixed(3);
+
+      // Direction Indicator
+      const dirInd = document.getElementById('direction-indicator');
+      if (deg > 0) {
+        dirInd.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+        dirInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>Verso Antiorario (Positivo +)';
+      } else if (deg < 0) {
+        dirInd.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30";
+        dirInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>Verso Orario (Negativo -)';
+      } else {
+        dirInd.className = "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-slate-700 text-slate-300 border border-slate-600";
+        dirInd.innerHTML = '<span class="w-2 h-2 rounded-full bg-slate-400"></span>Angolo Nullo (0°)';
+      }
+
+      // Turns count
+      const turns = Math.floor(Math.abs(deg) / 360);
+      const turnsCounter = document.getElementById('turns-counter');
+      turnsCounter.textContent = `${turns} ${turns === 1 ? 'giro completo' : 'giri completi'}`;
+
+      // Quadrant
+      const quadEl = document.getElementById('quadrant-display');
+      if (modDeg === 0 || modDeg === 90 || modDeg === 180 || modDeg === 270) {
+        quadEl.textContent = "Sull'asse coordinato";
+        quadEl.className = "font-bold text-cyan-300 bg-cyan-950/60 px-2.5 py-0.5 rounded-lg border border-cyan-800/50";
+      } else if (modDeg > 0 && modDeg < 90) {
+        quadEl.textContent = "I Quadrante (0° - 90°)";
+        quadEl.className = "font-bold text-indigo-300 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-800/50";
+      } else if (modDeg > 90 && modDeg < 180) {
+        quadEl.textContent = "II Quadrante (90° - 180°)";
+        quadEl.className = "font-bold text-indigo-300 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-800/50";
+      } else if (modDeg > 180 && modDeg < 270) {
+        quadEl.textContent = "III Quadrante (180° - 270°)";
+        quadEl.className = "font-bold text-indigo-300 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-800/50";
+      } else {
+        quadEl.textContent = "IV Quadrante (270° - 360°)";
+        quadEl.className = "font-bold text-indigo-300 bg-indigo-950/60 px-2.5 py-0.5 rounded-lg border border-indigo-800/50";
+      }
+
+      // Update Slider & Manual Input depending on active unit
+      if (state.unit === 'deg') {
+        angleSlider.value = deg;
+        manualInput.value = deg.toFixed(1);
+      } else {
+        angleSlider.value = deg;
+        manualInput.value = rad.toFixed(3);
+      }
+
+      // Live conversion step rendering
+      renderLiveConversion();
+    }
+
+    function renderStaticMath() {
+      if (typeof katex !== 'undefined') {
+        katex.render("\\frac{\\alpha^\\circ}{180^\\circ} = \\frac{\\alpha_{\\text{rad}}}{\\pi}", document.getElementById('formula-proportion'), { throwOnError: false });
+        katex.render("\\alpha_{\\text{rad}} = \\alpha^\\circ \\cdot \\frac{\\pi}{180^\\circ}", document.getElementById('formula-deg2rad'), { throwOnError: false });
+        katex.render("\\alpha^\\circ = \\alpha_{\\text{rad}} \\cdot \\frac{180^\\circ}{\\pi}", document.getElementById('formula-rad2deg'), { throwOnError: false });
+        katex.render("\\alpha = \\alpha_0 + k \\cdot 360^\\circ \\quad \\text{oppure} \\quad \\alpha = \\alpha_0 + 2k\\pi \\quad (k \\in \\mathbb{Z})", document.getElementById('formula-coterminal'), { throwOnError: false });
+      }
+    }
+
+    function renderLiveConversion() {
+      const deg = state.angleDeg;
+      const rad = degToRad(deg);
+      const el = document.getElementById('live-conversion-step');
+      if (!el || typeof katex === 'undefined') return;
+
+      if (state.unit === 'deg') {
+        const mathStr = `${deg.toFixed(1)}^\\circ \\cdot \\frac{\\pi}{180^\\circ} = \\frac{${deg.toFixed(1)}\\pi}{180} \\approx ${rad.toFixed(4)} \\text{ rad}`;
+        katex.render(mathStr, el, { throwOnError: false });
+      } else {
+        const mathStr = `${rad.toFixed(3)} \\text{ rad} \\cdot \\frac{180^\\circ}{\\pi} \\approx ${deg.toFixed(1)}^\\circ`;
+        katex.render(mathStr, el, { throwOnError: false });
+      }
+    }
+
+    function draw() {
+      const width = canvas.getBoundingClientRect().width;
+      const height = canvas.getBoundingClientRect().height;
+      const cx = state.center.x;
+      const cy = state.center.y;
+      const r = state.radius;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // 1. Coordinate Grid
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      const gridSize = 40;
+      for (let x = cx % gridSize; x < width; x += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      for (let y = cy % gridSize; y < height; y += gridSize) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      // 2. Axes (x and y)
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
+
+      // X Axis
+      ctx.beginPath();
+      ctx.moveTo(20, cy);
+      ctx.lineTo(width - 20, cy);
+      ctx.stroke();
+      // Arrow X
+      ctx.beginPath();
+      ctx.moveTo(width - 20, cy);
+      ctx.lineTo(width - 28, cy - 5);
+      ctx.lineTo(width - 28, cy + 5);
+      ctx.fillStyle = '#475569';
+      ctx.fill();
+
+      // Y Axis
+      ctx.beginPath();
+      ctx.moveTo(cx, height - 20);
+      ctx.lineTo(cx, 20);
+      ctx.stroke();
+      // Arrow Y
+      ctx.beginPath();
+      ctx.moveTo(cx, 20);
+      ctx.lineTo(cx - 5, 28);
+      ctx.lineTo(cx + 5, 28);
+      ctx.fillStyle = '#475569';
+      ctx.fill();
+
+      // Axis Labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px "JetBrains Mono", monospace';
+      ctx.fillText('x', width - 25, cy + 18);
+      ctx.fillText('y', cx + 12, 28);
+      ctx.fillText('O', cx - 14, cy + 16);
+
+      // 3. Circle of Reference
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(99, 102, 241, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 4. Initial Ray (Primo Lato - Asse x positivo)
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + r, cy);
+      ctx.strokeStyle = '#06b6d4'; // Cyan
+      ctx.lineWidth = 3.5;
+      ctx.stroke();
+
+      ctx.fillStyle = '#22d3ee';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('Primo Lato (Origine)', cx + r * 0.35, cy + 18);
+
+      // Current angle in radians
+      const angleRad = degToRad(state.angleDeg);
+      const isPositive = state.angleDeg >= 0;
+      const absDeg = Math.abs(state.angleDeg);
+
+      // 5. Oriented Arc / Spiral representing rotation
+      if (absDeg > 0.05) {
+        const strokeColor = isPositive ? '#10b981' : '#f43f5e';
+        
+        ctx.save();
+        ctx.beginPath();
+
+        const steps = Math.min(600, Math.max(80, Math.floor(absDeg * 2)));
+        const spiralSpacing = 8;
+
+        for (let i = 0; i <= steps; i++) {
+          const t = i / steps;
+          const currentTheta = angleRad * t;
+          const lapFraction = Math.abs(currentTheta) / (Math.PI * 2);
+          const currentRadius = 38 + lapFraction * spiralSpacing;
+          
+          const px = cx + Math.cos(currentTheta) * currentRadius;
+          const py = cy - Math.sin(currentTheta) * currentRadius;
+
+          if (i === 0) {
+            ctx.moveTo(px, py);
+          } else {
+            ctx.lineTo(px, py);
+          }
+        }
+
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Arrowhead at the end of the arc
+        const endLapFraction = Math.abs(angleRad) / (Math.PI * 2);
+        const endR = 38 + endLapFraction * spiralSpacing;
+        const tipX = cx + Math.cos(angleRad) * endR;
+        const tipY = cy - Math.sin(angleRad) * endR;
+
+        const tangentAngle = (isPositive ? angleRad + Math.PI / 2 : angleRad - Math.PI / 2);
+        const arrowLength = 9;
+
+        ctx.beginPath();
+        ctx.moveTo(tipX, tipY);
+        ctx.lineTo(
+          tipX - arrowLength * Math.cos(tangentAngle - Math.PI / 6),
+          tipY + arrowLength * Math.sin(tangentAngle - Math.PI / 6)
+        );
+        ctx.lineTo(
+          tipX - arrowLength * Math.cos(tangentAngle + Math.PI / 6),
+          tipY + arrowLength * Math.sin(tangentAngle + Math.PI / 6)
+        );
+        ctx.closePath();
+        ctx.fillStyle = strokeColor;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      const terminalX = cx + Math.cos(angleRad) * r;
+      const terminalY = cy - Math.sin(angleRad) * r;
+
+      // 6. Terminal Ray (Secondo Lato OP)
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(terminalX, terminalY);
+      ctx.strokeStyle = '#818cf8'; // Indigo
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // 7. Origin Point O
+      ctx.beginPath();
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#f8fafc';
+      ctx.fill();
+
+      // 8. Terminal Point P (draggable handle)
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(terminalX, terminalY, 9, 0, Math.PI * 2);
+      ctx.fillStyle = '#6366f1';
+      ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+      ctx.restore();
+
+      // Label for point P (pure geometric term)
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.fillText('P (Secondo Lato)', terminalX + 12, terminalY - 6);
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function handleDragStart(e) {
+      const pos = getCanvasCoordinates(e);
+      const angleRad = degToRad(state.angleDeg);
+      const px = state.center.x + Math.cos(angleRad) * state.radius;
+      const py = state.center.y - Math.sin(angleRad) * state.radius;
+
+      // Distance to point P or anywhere around circle edge
+      const distToP = Math.hypot(pos.x - px, pos.y - py);
+      const distToCenter = Math.hypot(pos.x - state.center.x, pos.y - state.center.y);
+
+      if (distToP < 30 || Math.abs(distToCenter - state.radius) < 35) {
+        state.isDragging = true;
+        // Calculate starting pointer angle in continuous space
+        const dx = pos.x - state.center.x;
+        const dy = -(pos.y - state.center.y);
+        state.lastDragAngle = Math.atan2(dy, dx);
+      }
+    }
+
+    function handleDragMove(e) {
+      if (!state.isDragging) return;
+      e.preventDefault();
+
+      const pos = getCanvasCoordinates(e);
+      const dx = pos.x - state.center.x;
+      const dy = -(pos.y - state.center.y);
+      const currentPointerAngle = Math.atan2(dy, dx);
+
+      if (state.lastDragAngle !== null) {
+        let delta = currentPointerAngle - state.lastDragAngle;
+        
+        // Handle wrap-around discontinuities (-PI to PI)
+        if (delta > Math.PI) delta -= Math.PI * 2;
+        if (delta < -Math.PI) delta += Math.PI * 2;
+
+        const deltaDeg = radToDeg(delta);
+        state.angleDeg += deltaDeg;
+
+        // Clamp to -720 to +720 for slider harmony, but keep free motion
+        if (state.angleDeg > 720) state.angleDeg = 720;
+        if (state.angleDeg < -720) state.angleDeg = -720;
+
+        updateUI();
+        draw();
+      }
+
+      state.lastDragAngle = currentPointerAngle;
+    }
+
+    function handleDragEnd() {
+      state.isDragging = false;
+      state.lastDragAngle = null;
+    }
+
+    canvas.addEventListener('mousedown', handleDragStart);
+    window.addEventListener('mousemove', handleDragMove);
+    window.addEventListener('mouseup', handleDragEnd);
+
+    canvas.addEventListener('touchstart', handleDragStart, { passive: false });
+    window.addEventListener('touchmove', handleDragMove, { passive: false });
+    window.addEventListener('touchend', handleDragEnd);
+
+    angleSlider.addEventListener('input', (e) => {
+      state.angleDeg = parseFloat(e.target.value);
+      updateUI();
+      draw();
+    });
+
+    manualInput.addEventListener('change', (e) => {
+      const val = parseFloat(e.target.value);
+      if (!isNaN(val)) {
+        if (state.unit === 'deg') {
+          state.angleDeg = val;
+        } else {
+          state.angleDeg = radToDeg(val);
+        }
+        updateUI();
+        draw();
+      }
+    });
+
+    function setAngle(deg) {
+      state.angleDeg = deg;
+      updateUI();
+      draw();
+    }
+
+    function resetAngle() {
+      setAngle(0);
+    }
+
+    function setUnit(unit) {
+      state.unit = unit;
+      const btnDeg = document.getElementById('btn-unit-deg');
+      const btnRad = document.getElementById('btn-unit-rad');
+      const sliderUnitLabel = document.getElementById('slider-unit-label');
+      const inputUnitSymbol = document.getElementById('input-unit-symbol');
+
+      if (unit === 'deg') {
+        btnDeg.className = "relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30";
+        btnRad.className = "relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white";
+        sliderUnitLabel.textContent = "Gradi";
+        inputUnitSymbol.textContent = "°";
+      } else {
+        btnRad.className = "relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 bg-indigo-600 text-white shadow-md shadow-indigo-600/30";
+        btnDeg.className = "relative px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 text-slate-300 hover:text-white";
+        sliderUnitLabel.textContent = "Radianti";
+        inputUnitSymbol.textContent = "rad";
+      }
+
+      updateUI();
+    }
+
+    window.addEventListener('load', () => {
+      renderStaticMath();
+      resizeCanvas();
+      updateUI();
+    });
+  </script>
+</body>
+</html>
