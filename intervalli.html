@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <title>IntervalliLab - Esplora e Impara gli Intervalli</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for rendering mathematical typography -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <!-- KaTeX auto-render extension for inline LaTeX -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .slider-thumb::-webkit-slider-thumb {
+      appearance: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #4f46e5;
+      cursor: pointer;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    }
+    .slider-thumb::-moz-range-thumb {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #4f46e5;
+      cursor: pointer;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    }
+    .touch-stepper-btn {
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .katex-display {
+      margin: 0.4em 0 !important;
+    }
+    .interactive-line-canvas {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm safe-area-inset-top">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 md:px-8 h-16 md:h-18 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-500 flex items-center justify-center text-white shadow-md font-bold text-lg">
+          [x]
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold text-slate-900 tracking-tight leading-tight">
+            Intervalli<span class="text-indigo-600">Lab</span>
+          </h1>
+          <p class="text-xs text-slate-500 font-medium hidden sm:block">Guida Interattiva agli Intervalli Reali</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 sm:space-x-1.5 md:space-x-2 bg-slate-100 p-1.5 rounded-xl">
+        <button id="tab-btn-lab" onclick="switchTab('lab')" class="px-3.5 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all bg-white text-indigo-700 shadow-sm active:scale-95 touch-stepper-btn">
+          Laboratorio
+        </button>
+        <button id="tab-btn-theory" onclick="switchTab('theory')" class="px-3.5 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900 active:scale-95 touch-stepper-btn">
+          Tipologie & Regole
+        </button>
+        <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="px-3.5 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900 active:scale-95 touch-stepper-btn flex items-center gap-1.5">
+          <span>Quiz & Sfida</span>
+          <span id="quiz-badge" class="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full font-bold">Nuovo</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow max-w-6xl w-full mx-auto px-4 sm:px-6 md:px-8 py-5 md:py-8">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: LABORATORIO INTERATTIVO             -->
+    <!-- ========================================== -->
+    <div id="tab-lab" class="space-y-6">
+      
+      <!-- Top Overview Banner -->
+      <div class="bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 rounded-2xl p-5 sm:p-6 md:p-7 text-white shadow-lg relative overflow-hidden">
+        <div class="relative z-10 max-w-2xl">
+          <span class="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold tracking-wide uppercase mb-2">
+            Esploratore Dinamico
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold mb-2">Crea, manipola e osserva</h2>
+          <p class="text-indigo-100 text-sm sm:text-base leading-relaxed">
+            Un <strong>intervallo</strong> è un sottoinsieme di numeri reali compresi tra due estremi. Modifica i valori, imposta se gli estremi sono inclusi o se l'intervallo è illimitato verso infinito.
+          </p>
+        </div>
+        <!-- Abstract background accents -->
+        <div class="absolute -right-8 -bottom-10 w-48 h-48 bg-white/10 rounded-full blur-2xl pointer-events-none"></div>
+      </div>
+
+      <!-- Live Canvas Number Line Section -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 md:p-7 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <h3 class="text-base sm:text-lg md:text-xl font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Rappresentazione Grafica sulla Retta Reale
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Pallino pieno <span class="inline-block w-2.5 h-2.5 rounded-full bg-indigo-600 mx-0.5 align-middle"></span> = estremo compreso. Pallino vuoto <span class="inline-block w-2.5 h-2.5 rounded-full border-2 border-indigo-600 bg-white mx-0.5 align-middle"></span> = estremo escluso. Tocca o trascina per muovere il punto test.</p>
+          </div>
+          <div class="flex items-center gap-2 text-xs md:text-sm shrink-0">
+            <span class="text-slate-500 font-medium">Stile parentesi:</span>
+            <button id="toggle-bracket-style" onclick="toggleBracketStyle()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 rounded-lg font-mono text-xs md:text-sm font-semibold transition-colors touch-stepper-btn">
+              Standard: (a, b)
+            </button>
+          </div>
+        </div>
+
+        <!-- Canvas Container with optimized height for iPad -->
+        <div class="relative bg-slate-50 border border-slate-200/90 rounded-2xl p-3 sm:p-4 overflow-hidden select-none">
+          <canvas id="number-line-canvas" class="w-full h-36 sm:h-40 md:h-44 interactive-line-canvas cursor-ew-resize"></canvas>
+          <div id="canvas-tooltip" class="absolute hidden bg-slate-900 text-white text-xs px-2.5 py-1 rounded shadow-lg pointer-events-none -translate-x-1/2"></div>
+        </div>
+
+        <!-- Probe / Test Point Membership with iPad-friendly touch sizing -->
+        <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <label class="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+              Punto di test \(x_0\):
+            </label>
+            <div class="inline-flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200">
+              <button onclick="stepTestPoint(-0.5)" class="w-8 h-8 rounded-lg bg-white shadow-xs text-slate-700 font-bold hover:bg-slate-50 active:bg-slate-200 touch-stepper-btn" title="Diminuisci">&minus;</button>
+              <input type="number" id="test-point-input" step="0.5" value="1" class="w-16 md:w-20 px-1 py-1 text-sm md:text-base border-0 bg-transparent focus:outline-none font-mono text-center font-bold">
+              <button onclick="stepTestPoint(0.5)" class="w-8 h-8 rounded-lg bg-white shadow-xs text-slate-700 font-bold hover:bg-slate-50 active:bg-slate-200 touch-stepper-btn" title="Aumenta">+</button>
+            </div>
+            <button onclick="updateTestPointFromInput()" class="px-3.5 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95 text-xs md:text-sm font-bold rounded-xl transition-colors touch-stepper-btn">
+              Verifica
+            </button>
+          </div>
+          <div id="test-result-badge" class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all shadow-xs">
+            <!-- Dynamic Result -->
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+        
+        <!-- Left: Configuration & Controls (Spans 5 cols on iPad/Desktop) -->
+        <div class="md:col-span-5 lg:col-span-4 bg-white rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm space-y-5">
+          <h3 class="text-base font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center justify-between">
+            <span>Configura Intervallo</span>
+            <button onclick="resetLab()" class="text-xs text-indigo-600 hover:underline font-semibold p-1 touch-stepper-btn">Reimposta</button>
+          </h3>
+
+          <!-- Presets with responsive touch cards -->
+          <div>
+            <label class="block text-xs font-semibold uppercase text-slate-500 tracking-wider mb-2.5">Esempi Pronti</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="loadPreset('closed-bounded')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Limitato Chiuso [-2, 4]
+              </button>
+              <button onclick="loadPreset('open-bounded')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Limitato Aperto (-3, 2)
+              </button>
+              <button onclick="loadPreset('semi-left')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Semiaperto a sx (-1, 3]
+              </button>
+              <button onclick="loadPreset('unbounded-right')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Illimitato sup. [1, +∞)
+              </button>
+              <button onclick="loadPreset('unbounded-left')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Illimitato inf. (-∞, 0)
+              </button>
+              <button onclick="loadPreset('all-reals')" class="text-xs md:text-[13px] p-2.5 rounded-xl bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 active:bg-indigo-100 text-slate-700 font-medium transition text-left touch-stepper-btn">
+                Tutta la Retta (-∞, +∞)
+              </button>
+            </div>
+          </div>
+
+          <!-- Estremo Sinistro (a) -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs md:text-sm font-bold text-slate-700">Estremo Inferiore (a)</span>
+              <label class="flex items-center gap-1.5 cursor-pointer select-none p-1 -m-1">
+                <input type="checkbox" id="check-inf-left" onchange="toggleInfLeft(this.checked)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 md:w-5 md:h-5">
+                <span class="text-xs font-semibold text-indigo-900 bg-indigo-50 border border-indigo-200 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <span class="text-sm font-bold leading-none">&minus;&infin;</span>
+                  <span class="text-[11px] text-slate-500 font-normal hidden sm:inline">(illimitato)</span>
+                </span>
+              </label>
+            </div>
+            <div id="container-a-controls" class="space-y-2.5">
+              <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500">
+                <div class="flex items-center gap-1.5">
+                  <span>Valore:</span>
+                  <strong id="val-a-display" class="text-slate-900 font-mono text-base px-2 py-0.5 bg-white border border-slate-200 rounded-lg shadow-2xs min-w-[32px] text-center">-2</strong>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer p-1 -m-1">
+                  <input type="checkbox" id="check-a-included" checked onchange="toggleIncluded('a', this.checked)" class="rounded text-indigo-600 w-4 h-4 md:w-5 md:h-5">
+                  <span class="text-xs md:text-sm font-medium text-slate-700">Incluso [a</span>
+                </label>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="stepEndpoint('a', -1)" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700 hover:bg-slate-100 active:bg-slate-200 touch-stepper-btn shrink-0" title="Riduci a">&minus;</button>
+                <input type="range" id="slider-a" min="-6" max="6" step="1" value="-2" oninput="onSliderChange('a', this.value)" class="w-full h-2 bg-slate-200 rounded-lg slider-thumb accent-indigo-600 cursor-pointer">
+                <button onclick="stepEndpoint('a', 1)" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700 hover:bg-slate-100 active:bg-slate-200 touch-stepper-btn shrink-0" title="Aumenta a">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Estremo Destro (b) -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+            <div class="flex items-center justify-between">
+              <span class="text-xs md:text-sm font-bold text-slate-700">Estremo Superiore (b)</span>
+              <label class="flex items-center gap-1.5 cursor-pointer select-none p-1 -m-1">
+                <input type="checkbox" id="check-inf-right" onchange="toggleInfRight(this.checked)" class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 md:w-5 md:h-5">
+                <span class="text-xs font-semibold text-purple-900 bg-purple-50 border border-purple-200 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <span class="text-sm font-bold leading-none">+&infin;</span>
+                  <span class="text-[11px] text-slate-500 font-normal hidden sm:inline">(illimitato)</span>
+                </span>
+              </label>
+            </div>
+            <div id="container-b-controls" class="space-y-2.5">
+              <div class="flex items-center justify-between text-xs sm:text-sm text-slate-500">
+                <div class="flex items-center gap-1.5">
+                  <span>Valore:</span>
+                  <strong id="val-b-display" class="text-slate-900 font-mono text-base px-2 py-0.5 bg-white border border-slate-200 rounded-lg shadow-2xs min-w-[32px] text-center">3</strong>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer p-1 -m-1">
+                  <input type="checkbox" id="check-b-included" checked onchange="toggleIncluded('b', this.checked)" class="rounded text-indigo-600 w-4 h-4 md:w-5 md:h-5">
+                  <span class="text-xs md:text-sm font-medium text-slate-700">Incluso b]</span>
+                </label>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="stepEndpoint('b', -1)" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700 hover:bg-slate-100 active:bg-slate-200 touch-stepper-btn shrink-0" title="Riduci b">&minus;</button>
+                <input type="range" id="slider-b" min="-6" max="6" step="1" value="3" oninput="onSliderChange('b', this.value)" class="w-full h-2 bg-slate-200 rounded-lg slider-thumb accent-indigo-600 cursor-pointer">
+                <button onclick="stepEndpoint('b', 1)" class="w-9 h-9 rounded-xl bg-white border border-slate-200 shadow-xs font-bold text-slate-700 hover:bg-slate-100 active:bg-slate-200 touch-stepper-btn shrink-0" title="Aumenta b">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div id="error-order-message" class="hidden text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-200 font-medium">
+            ⚠️ L'estremo inferiore <i>a</i> non può essere maggiore di <i>b</i>. I valori sono stati allineati automaticamente.
+          </div>
+        </div>
+
+        <!-- Right: Real-Time Notation Breakdown (Spans 7 cols on iPad, 8 cols on large screens) -->
+        <div class="md:col-span-7 lg:col-span-8 space-y-4">
+          
+          <!-- Interval Identity Badge -->
+          <div class="bg-indigo-50/60 border border-indigo-100 rounded-2xl p-4 md:p-5 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-indigo-600 animate-pulse shrink-0"></span>
+              <div>
+                <span class="text-xs font-semibold uppercase text-indigo-600 tracking-wider">Classificazione Tipologia</span>
+                <h4 id="interval-type-name" class="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 leading-tight">Intervallo Limitato Chiuso</h4>
+              </div>
+            </div>
+            <div id="bounded-type-tags" class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-indigo-700 border border-indigo-200">Limitato</span>
+              <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-emerald-700 border border-emerald-200">Chiuso</span>
+            </div>
+          </div>
+
+          <!-- Cards for the 3 Core Notations: tablet responsive layout -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5 md:gap-4">
+            
+            <!-- 1. Notazione Algebrica (Parentesi) -->
+            <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500">1. Notazione</span>
+                  <span class="text-[10px] bg-indigo-50 text-indigo-600 font-bold px-2 py-0.5 rounded-md">Parentesi</span>
+                </div>
+                <p class="text-[11px] md:text-xs text-slate-500 mb-2.5">Scrittura algebrica standard.</p>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 md:p-4 text-center border border-slate-100 min-h-[70px] flex items-center justify-center overflow-x-auto">
+                <div id="math-bracket-formula" class="text-lg md:text-xl font-bold text-slate-900"></div>
+              </div>
+            </div>
+
+            <!-- 2. Notazione con Disequazioni -->
+            <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500">2. Disequazione</span>
+                  <span class="text-[10px] bg-purple-50 text-purple-600 font-bold px-2 py-0.5 rounded-md">Relazione</span>
+                </div>
+                <p class="text-[11px] md:text-xs text-slate-500 mb-2.5">Condizione algebrica per x.</p>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 md:p-4 text-center border border-slate-100 min-h-[70px] flex items-center justify-center overflow-x-auto">
+                <div id="math-inequality-formula" class="text-lg md:text-xl font-bold text-slate-900"></div>
+              </div>
+            </div>
+
+            <!-- 3. Notazione Insiemistica Completa -->
+            <div class="bg-white p-4 md:p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <span class="text-xs font-bold uppercase tracking-wider text-slate-500">3. Insiemistica</span>
+                  <span class="text-[10px] bg-blue-50 text-blue-600 font-bold px-2 py-0.5 rounded-md">Formale</span>
+                </div>
+                <p class="text-[11px] md:text-xs text-slate-500 mb-2.5">Sottoinsieme dei reali \(\mathbb{R}\).</p>
+              </div>
+              <div class="bg-slate-50 rounded-xl p-3 md:p-4 text-center border border-slate-100 min-h-[70px] flex items-center justify-center overflow-x-auto">
+                <div id="math-set-formula" class="text-sm md:text-base font-bold text-slate-900"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Deep Explanation Box -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm space-y-3">
+            <h4 class="text-sm md:text-base font-bold text-slate-900 flex items-center gap-2">
+              <svg class="w-4 h-4 text-amber-500 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+              Cosa significa in pratica questo intervallo?
+            </h4>
+            <div id="interval-narrative-explanation" class="text-xs md:text-sm text-slate-600 leading-relaxed space-y-2">
+              <!-- Rendered via JS -->
+            </div>
+            <!-- Amplitude info if bounded -->
+            <div id="interval-amplitude-box" class="pt-3 border-t border-slate-100 text-xs md:text-sm text-slate-500 flex flex-wrap gap-4">
+              <!-- Amplitude and midpoint -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: GUIDA TEORICA E TIPOLOGIE           -->
+    <!-- ========================================== -->
+    <div id="tab-theory" class="hidden space-y-8">
+      
+      <!-- Intro Section -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm">
+        <h2 class="text-2xl font-bold text-slate-900 mb-3">I Fondamenti degli Intervalli</h2>
+        <p class="text-slate-600 text-sm sm:text-base leading-relaxed mb-6">
+          Un <strong>intervallo</strong> è un insieme di numeri reali che contiene tutti i numeri compresi tra due punti prefissati, detti <em>estremi</em>, o a partire da un estremo verso infinito.
+        </p>
+
+        <!-- Graphic Symbol Key -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
+          <div class="flex items-start gap-3.5">
+            <div class="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-sm">
+              <span class="w-3 h-3 rounded-full bg-white"></span>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Pallino Pieno (●) & Parentesi Quadra verso il numero [ o ]</h4>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Significa che l'estremo <strong>appartiene</strong> all'intervallo. Nella disequazione si usano i simboli di disuguaglianza larga: <span class="font-mono font-bold text-indigo-600">\(\le\)</span> o <span class="font-mono font-bold text-indigo-600">\(\ge\)</span>.
+              </p>
+            </div>
+          </div>
+
+          <div class="flex items-start gap-3.5">
+            <div class="w-7 h-7 rounded-full border-2 border-indigo-600 bg-white flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+              <span class="w-2.5 h-2.5 rounded-full bg-slate-100"></span>
+            </div>
+            <div>
+              <h4 class="text-sm font-bold text-slate-900">Pallino Vuoto (○) & Parentesi Tonda ( o )</h4>
+              <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                Significa che l'estremo <strong>non appartiene</strong> all'intervallo. Nella disequazione si usano i simboli di disuguaglianza stretta: <span class="font-mono font-bold text-indigo-600">&lt;</span> o <span class="font-mono font-bold text-indigo-600">&gt;</span>.
+                <em>Nota:</em> In Italia si trova spesso la notazione a quadre rovesciate <code class="bg-slate-200 px-1 rounded text-slate-800">]a, b[</code> come sinonimo di <code class="bg-slate-200 px-1 rounded text-slate-800">(a, b)</code>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Taxonomy: Limitati vs Illimitati -->
+      <div class="space-y-6">
+        <div>
+          <h3 class="text-xl font-bold text-slate-900 mb-1">Tavola Completa delle Tipologie</h3>
+          <p class="text-xs text-slate-500">Tutti i 9 casi possibili di intervalli reali a confronto immediato.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          
+          <!-- Category A: Intervalli Limitati -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h4 class="text-base font-bold text-indigo-600 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                Intervalli Limitati (Segmenti)
+              </h4>
+              <span class="text-xs text-slate-400 font-medium">Hanno sia estremo inf. che sup. finiti</span>
+            </div>
+
+            <!-- Item 1 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Limitato Chiuso</span>
+                <span class="font-mono text-xs font-semibold text-indigo-600">[a, b]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Entrambi gli estremi appartengono all'insieme.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">a ≤ x ≤ b</b></span>
+                <span class="text-indigo-600 font-bold">●━━━━━●</span>
+              </div>
+            </div>
+
+            <!-- Item 2 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Limitato Aperto</span>
+                <span class="font-mono text-xs font-semibold text-indigo-600">(a, b) oppure ]a, b[</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Nessuno dei due estremi appartiene all'insieme.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">a &lt; x &lt; b</b></span>
+                <span class="text-indigo-600 font-bold">○━━━━━○</span>
+              </div>
+            </div>
+
+            <!-- Item 3 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Semiaperto a Destra (Chiuso a sinistra)</span>
+                <span class="font-mono text-xs font-semibold text-indigo-600">[a, b) oppure [a, b[</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">L'estremo <i>a</i> appartiene, mentre <i>b</i> è escluso.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">a ≤ x &lt; b</b></span>
+                <span class="text-indigo-600 font-bold">●━━━━━○</span>
+              </div>
+            </div>
+
+            <!-- Item 4 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Semiaperto a Sinistra (Chiuso a destra)</span>
+                <span class="font-mono text-xs font-semibold text-indigo-600">(a, b] oppure ]a, b]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">L'estremo <i>a</i> è escluso, mentre <i>b</i> appartiene.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">a &lt; x ≤ b</b></span>
+                <span class="text-indigo-600 font-bold">○━━━━━●</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Category B: Intervalli Illimitati -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h4 class="text-base font-bold text-purple-600 flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-purple-600"></span>
+                Intervalli Illimitati (Semirette e Retta)
+              </h4>
+              <span class="text-xs text-slate-400 font-medium">Almeno un estremo è ±∞</span>
+            </div>
+
+            <!-- Item 5 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-purple-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Illimitato Superiormente Chiuso</span>
+                <span class="font-mono text-xs font-semibold text-purple-600">[a, +∞)</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Tutti i numeri maggiori o uguali ad <i>a</i>.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">x ≥ a</b></span>
+                <span class="text-purple-600 font-bold">●━━━━━►</span>
+              </div>
+            </div>
+
+            <!-- Item 6 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-purple-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Illimitato Superiormente Aperto</span>
+                <span class="font-mono text-xs font-semibold text-purple-600">(a, +∞)</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Tutti i numeri strettamente maggiori di <i>a</i>.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">x &gt; a</b></span>
+                <span class="text-purple-600 font-bold">○━━━━━►</span>
+              </div>
+            </div>
+
+            <!-- Item 7 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-purple-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Illimitato Inferiormente Chiuso</span>
+                <span class="font-mono text-xs font-semibold text-purple-600">(-∞, b]</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Tutti i numeri minori o uguali a <i>b</i>.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">x ≤ b</b></span>
+                <span class="text-purple-600 font-bold">◄━━━━━●</span>
+              </div>
+            </div>
+
+            <!-- Item 8 -->
+            <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-100 hover:border-purple-200 transition">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-slate-800">Illimitato Inferiormente Aperto</span>
+                <span class="font-mono text-xs font-semibold text-purple-600">(-∞, b)</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-2">Tutti i numeri strettamente minori di <i>b</i>.</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-slate-200">
+                <span>Disequazione: <b class="text-slate-800">x &lt; b</b></span>
+                <span class="text-purple-600 font-bold">◄━━━━━○</span>
+              </div>
+            </div>
+
+            <!-- Item 9 -->
+            <div class="p-3.5 rounded-xl bg-purple-50/50 border border-purple-200">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-xs font-bold text-purple-900">Totalmente Illimitato (La Retta Reale ℝ)</span>
+                <span class="font-mono text-xs font-semibold text-purple-700">(-∞, +∞)</span>
+              </div>
+              <p class="text-xs text-slate-600 mb-2">L'intero insieme dei numeri reali \(\mathbb{R}\).</p>
+              <div class="flex items-center justify-between text-xs font-mono bg-white p-2 rounded-lg border border-purple-200">
+                <span>Disequazione: <b class="text-purple-900">\(\forall x \in \mathbb{R}\)</b></span>
+                <span class="text-purple-600 font-bold">◄━━━━━━━━►</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Pro-Tip Box -->
+      <div class="bg-amber-50 rounded-2xl border border-amber-200 p-5 sm:p-6 text-amber-900 flex items-start gap-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-200 flex items-center justify-center shrink-0 text-xl font-bold">
+          💡
+        </div>
+        <div>
+          <h4 class="font-bold text-base mb-1">Regola d'oro sull'infinito \(\infty\)</h4>
+          <p class="text-sm text-amber-800 leading-relaxed">
+            I simboli \(-\infty\) e \(+\infty\) <strong>non sono numeri reali</strong>, ma indicano che l'insieme continua indefinitamente verso sinistra o verso destra. Di conseguenza, in corrispondenza di un infinito si pone <strong>sempre una parentesi aperta</strong> (tonda o quadra rovesciata) e mai chiusa.
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: QUIZ & ESERCIZI                     -->
+    <!-- ========================================== -->
+    <div id="tab-quiz" class="hidden space-y-6">
+      
+      <!-- Quiz Header & Scoreboard -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 class="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
+            <span>Allenamento & Sfida</span>
+            <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full font-semibold">Interattivo</span>
+          </h2>
+          <p class="text-xs md:text-sm text-slate-500 mt-1">Mettiti alla prova con domande generate per rafforzare la padronanza dei concetti.</p>
+        </div>
+        
+        <!-- Score and Streak with touch sizing -->
+        <div class="flex items-center gap-5 bg-slate-50 px-5 py-3 rounded-2xl border border-slate-200">
+          <div class="text-center">
+            <span class="text-[10px] md:text-xs uppercase font-bold text-slate-400 block">Punteggio</span>
+            <span id="quiz-score" class="text-xl font-black text-indigo-600">0</span>
+          </div>
+          <div class="w-px h-8 bg-slate-200"></div>
+          <div class="text-center">
+            <span class="text-[10px] md:text-xs uppercase font-bold text-slate-400 block">Serie Corrette</span>
+            <span id="quiz-streak" class="text-xl font-black text-amber-500">🔥 0</span>
+          </div>
+          <div class="w-px h-8 bg-slate-200"></div>
+          <button onclick="resetQuizStats()" title="Azzera statistiche" class="text-slate-400 hover:text-slate-700 p-2 touch-stepper-btn text-base">
+            ↺
+          </button>
+        </div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm space-y-6 relative">
+        <div class="flex items-center justify-between">
+          <span id="quiz-category-tag" class="text-xs md:text-sm font-bold px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+            Tipologia Esercizio
+          </span>
+          <span id="quiz-difficulty" class="text-xs md:text-sm text-slate-400 font-medium">Livello Base</span>
+        </div>
+
+        <div id="quiz-question-text" class="text-base sm:text-lg md:text-xl font-bold text-slate-900 leading-snug">
+          <!-- Dynamic question prompt -->
+        </div>
+
+        <!-- Visual aid / Graphic canvas for the question if applicable -->
+        <div id="quiz-canvas-container" class="hidden bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <canvas id="quiz-number-line" class="w-full h-28 sm:h-32"></canvas>
+        </div>
+
+        <!-- Math formula prompt container -->
+        <div id="quiz-math-prompt" class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-center min-h-[60px] text-lg font-bold text-slate-900">
+          <!-- Rendered formula -->
+        </div>
+
+        <!-- Options Container -->
+        <div id="quiz-options-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+          <!-- Option buttons dynamically generated -->
+        </div>
+
+        <!-- Explanation / Feedback Box -->
+        <div id="quiz-feedback" class="hidden p-4 rounded-xl text-sm md:text-base leading-relaxed border">
+          <!-- Feedback text -->
+        </div>
+
+        <!-- Action Footer with generous touch buttons -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+          <button id="quiz-hint-btn" onclick="showQuizHint()" class="px-3.5 py-2 text-xs md:text-sm font-semibold text-slate-600 hover:text-indigo-600 transition flex items-center gap-1.5 touch-stepper-btn">
+            <span>💡 Suggerimento</span>
+          </button>
+          <button id="quiz-next-btn" onclick="generateNewQuizQuestion()" class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl text-sm md:text-base font-bold shadow-md shadow-indigo-200 transition-all flex items-center gap-2 touch-stepper-btn">
+            <span>Prossima Domanda</span>
+            <span>→</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <footer class="bg-white border-t border-slate-200 mt-auto py-5 text-center text-xs text-slate-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <span><strong>IntervalliLab</strong> &bull; Concetto, tipologie e notazioni per studenti di scuola secondaria e università.</span>
+      <span class="text-slate-400">Notazioni conformi agli standard internazionali e alla tradizione italiana.</span>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT LOGIC & VISUALIZATION ENGINE                                  -->
+  <!-- ========================================================================= -->
+  <script>
+    const state = {
+      // Interval parameters
+      a: -2,
+      b: 3,
+      aIncluded: true,
+      bIncluded: true,
+      infLeft: false,  // true means -Infinity
+      infRight: false, // true means +Infinity
+      useAlternativeBrackets: false, // false = (a, b), true = ]a, b[
+      
+      // Probe / Test point
+      testPoint: 1,
+
+      // Quiz state
+      quizScore: 0,
+      quizStreak: 0,
+      currentQuestion: null,
+      quizAnswered: false,
+      
+      // Canvas view scale
+      minDomain: -7,
+      maxDomain: 7
+    };
+
+    function checkPointMembership(val) {
+      if (state.infLeft && state.infRight) return true;
+      let lowerValid = true;
+      let upperValid = true;
+
+      if (!state.infLeft) {
+        lowerValid = state.aIncluded ? (val >= state.a) : (val > state.a);
+      }
+      if (!state.infRight) {
+        upperValid = state.bIncluded ? (val <= state.b) : (val < state.b);
+      }
+
+      return lowerValid && upperValid;
+    }
+
+    function switchTab(tabId) {
+      const tabs = ['lab', 'theory', 'quiz'];
+      tabs.forEach(t => {
+        const section = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if (!section || !btn) return;
+
+        if (t === tabId) {
+          section.classList.remove('hidden');
+          btn.className = "px-3.5 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all bg-white text-indigo-700 shadow-sm active:scale-95 touch-stepper-btn" + (t === 'quiz' ? ' flex items-center gap-1.5' : '');
+        } else {
+          section.classList.add('hidden');
+          btn.className = "px-3.5 md:px-5 py-2 rounded-lg text-xs md:text-sm font-semibold transition-all text-slate-600 hover:text-slate-900 active:scale-95 touch-stepper-btn" + (t === 'quiz' ? ' flex items-center gap-1.5' : '');
+        }
+      });
+
+      if (tabId === 'lab') {
+        requestAnimationFrame(() => {
+          renderMainCanvas();
+        });
+      } else if (tabId === 'quiz') {
+        if (!state.currentQuestion) {
+          generateNewQuizQuestion();
+        }
+      }
+    }
+
+    function updateUI() {
+      // 1. Build Bracket Notation
+      let bracketLatex = "";
+      const alt = state.useAlternativeBrackets;
+
+      if (state.infLeft && state.infRight) {
+        bracketLatex = alt ? `]-\\infty, +\\infty[` : `(-\\infty, +\\infty)`;
+      } else if (state.infLeft) {
+        const lBracket = alt ? `]` : `(`;
+        const rBracket = state.bIncluded ? `]` : (alt ? `[` : `)`);
+        bracketLatex = `${lBracket}-\\infty, ${state.b}${rBracket}`;
+      } else if (state.infRight) {
+        const lBracket = state.aIncluded ? `[` : (alt ? `]` : `(`);
+        const rBracket = alt ? `[` : `)`;
+        bracketLatex = `${lBracket}${state.a}, +\\infty${rBracket}`;
+      } else {
+        const lBracket = state.aIncluded ? `[` : (alt ? `]` : `(`);
+        const rBracket = state.bIncluded ? `]` : (alt ? `[` : `)`);
+        bracketLatex = `${lBracket}${state.a}, ${state.b}${rBracket}`;
+      }
+
+      // 2. Build Inequality Notation
+      let ineqLatex = "";
+      if (state.infLeft && state.infRight) {
+        ineqLatex = `\\forall x \\in \\mathbb{R}`;
+      } else if (state.infLeft) {
+        ineqLatex = `x ${state.bIncluded ? '\\le' : '<'} ${state.b}`;
+      } else if (state.infRight) {
+        ineqLatex = `x ${state.aIncluded ? '\\ge' : '>'} ${state.a}`;
+      } else {
+        const lRel = state.aIncluded ? '\\le' : '<';
+        const rRel = state.bIncluded ? '\\le' : '<';
+        ineqLatex = `${state.a} ${lRel} x ${rRel} ${state.b}`;
+      }
+
+      // 3. Build Set-Builder Notation
+      let setLatex = "";
+      if (state.infLeft && state.infRight) {
+        setLatex = `\\mathbb{R}`;
+      } else {
+        setLatex = `\\{ x \\in \\mathbb{R} \\mid ${ineqLatex} \\}`;
+      }
+
+      // Render KaTeX components safely
+      const bracketEl = document.getElementById('math-bracket-formula');
+      const ineqEl = document.getElementById('math-inequality-formula');
+      const setEl = document.getElementById('math-set-formula');
+
+      if (window.katex) {
+        if (bracketEl) katex.render(bracketLatex, bracketEl, { displayMode: true, throwOnError: false });
+        if (ineqEl) katex.render(ineqLatex, ineqEl, { displayMode: true, throwOnError: false });
+        if (setEl) katex.render(setLatex, setEl, { displayMode: true, throwOnError: false });
+      }
+
+      // 4. Update Interval Classification Name & Badges
+      const titleEl = document.getElementById('interval-type-name');
+      const tagsEl = document.getElementById('bounded-type-tags');
+      const narrativeEl = document.getElementById('interval-narrative-explanation');
+      const amplitudeEl = document.getElementById('interval-amplitude-box');
+
+      let title = "";
+      let tagsHtml = "";
+      let narrative = "";
+
+      if (state.infLeft && state.infRight) {
+        title = "Intervallo Illimitato (La Retta Reale ℝ)";
+        tagsHtml = `
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">Illimitato</span>
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-indigo-700 border border-indigo-200">Tutto ℝ</span>
+        `;
+        narrative = `<p>Questo intervallo coincide con l'intero insieme dei numeri reali <strong>ℝ</strong>. Comprende qualsiasi numero reale da <i>-∞</i> a <i>+∞</i> senza alcuna limitazione.</p>`;
+        if (amplitudeEl) {
+          amplitudeEl.innerHTML = `<span><strong>Ampiezza:</strong> Infinita (non limitato)</span>`;
+        }
+      } else if (state.infLeft) {
+        title = `Intervallo Illimitato Inferiormente ${state.bIncluded ? 'Chiuso' : 'Aperto'}`;
+        tagsHtml = `
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">Illimitato a sinistra</span>
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold ${state.bIncluded ? 'text-emerald-700 border-emerald-200' : 'text-amber-700 border-amber-200'} border">${state.bIncluded ? 'Chiuso a dx' : 'Aperto a dx'}</span>
+        `;
+        narrative = `
+          <p>Comprende tutti i numeri reali minori ${state.bIncluded ? 'o uguali a' : 'strettamente di'} <strong>${state.b}</strong>.</p>
+          <p class="text-xs text-slate-500">L'estremo superiore <strong>b = ${state.b}</strong> è ${state.bIncluded ? '<strong>compreso</strong> nell\'insieme (pallino pieno, parentesi quadra)' : '<strong>escluso</strong> dall\'insieme (pallino vuoto, parentesi tonda)'}.</p>
+        `;
+        if (amplitudeEl) {
+          amplitudeEl.innerHTML = `<span><strong>Estremo Superiore:</strong> b = ${state.b}</span><span><strong>Ampiezza:</strong> Infinita (semiretta)</span>`;
+        }
+      } else if (state.infRight) {
+        title = `Intervallo Illimitato Superiormente ${state.aIncluded ? 'Chiuso' : 'Aperto'}`;
+        tagsHtml = `
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-purple-700 border border-purple-200">Illimitato a destra</span>
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold ${state.aIncluded ? 'text-emerald-700 border-emerald-200' : 'text-amber-700 border-amber-200'} border">${state.aIncluded ? 'Chiuso a sx' : 'Aperto a sx'}</span>
+        `;
+        narrative = `
+          <p>Comprende tutti i numeri reali maggiori ${state.aIncluded ? 'o uguali ad' : 'strettamente di'} <strong>${state.a}</strong>.</p>
+          <p class="text-xs text-slate-500">L'estremo inferiore <strong>a = ${state.a}</strong> è ${state.aIncluded ? '<strong>compreso</strong> nell\'insieme (pallino pieno, parentesi quadra)' : '<strong>escluso</strong> dall\'insieme (pallino vuoto, parentesi tonda)'}.</p>
+        `;
+        if (amplitudeEl) {
+          amplitudeEl.innerHTML = `<span><strong>Estremo Inferiore:</strong> a = ${state.a}</span><span><strong>Ampiezza:</strong> Infinita (semiretta)</span>`;
+        }
+      } else {
+        const isClosed = state.aIncluded && state.bIncluded;
+        const isOpen = !state.aIncluded && !state.bIncluded;
+        const isSemiRight = state.aIncluded && !state.bIncluded;
+        const isSemiLeft = !state.aIncluded && state.bIncluded;
+
+        if (isClosed) title = "Intervallo Limitato Chiuso";
+        else if (isOpen) title = "Intervallo Limitato Aperto";
+        else if (isSemiRight) title = "Intervallo Semiaperto a Destra (Chiuso a sx)";
+        else title = "Intervallo Semiaperto a Sinistra (Chiuso a dx)";
+
+        tagsHtml = `
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold text-indigo-700 border border-indigo-200">Limitato</span>
+          <span class="px-2.5 py-1 bg-white rounded-lg text-xs font-semibold ${isClosed ? 'text-emerald-700 border-emerald-200' : (isOpen ? 'text-amber-700 border-amber-200' : 'text-blue-700 border-blue-200')} border">
+            ${isClosed ? 'Chiuso' : (isOpen ? 'Aperto' : 'Semiaperto')}
+          </span>
+        `;
+
+        narrative = `
+          <p>Comprende tutti i numeri compresi tra <strong>${state.a}</strong> e <strong>${state.b}</strong>.</p>
+          <p class="text-xs text-slate-500">
+            • Estremo <strong>a = ${state.a}</strong>: ${state.aIncluded ? '<strong>compreso</strong> (pallino pieno)' : '<strong>escluso</strong> (pallino vuoto)'}.<br>
+            • Estremo <strong>b = ${state.b}</strong>: ${state.bIncluded ? '<strong>compreso</strong> (pallino pieno)' : '<strong>escluso</strong> (pallino vuoto)'}.
+          </p>
+        `;
+
+        const amplitude = state.b - state.a;
+        const center = (state.a + state.b) / 2;
+        const radius = amplitude / 2;
+
+        if (amplitudeEl) {
+          amplitudeEl.innerHTML = `
+            <span><strong>Ampiezza:</strong> L = b - a = ${amplitude}</span>
+            <span><strong>Centro:</strong> x₀ = ${center}</span>
+            <span><strong>Raggio:</strong> r = ${radius}</span>
+          `;
+        }
+      }
+
+      if (titleEl) titleEl.innerText = title;
+      if (tagsEl) tagsEl.innerHTML = tagsHtml;
+      if (narrativeEl) narrativeEl.innerHTML = narrative;
+
+      // 5. Redraw Canvas and probe point
+      renderMainCanvas();
+      updateMembershipBadge();
+    }
+
+    // Incremental stepper helper for tablet touch buttons (+/-)
+    function stepEndpoint(endpoint, delta) {
+      if (endpoint === 'a' && !state.infLeft) {
+        const newVal = Math.max(state.minDomain, Math.min(state.maxDomain, state.a + delta));
+        onSliderChange('a', newVal);
+      } else if (endpoint === 'b' && !state.infRight) {
+        const newVal = Math.max(state.minDomain, Math.min(state.maxDomain, state.b + delta));
+        onSliderChange('b', newVal);
+      }
+    }
+
+    function stepTestPoint(delta) {
+      const current = parseFloat(document.getElementById('test-point-input').value) || 0;
+      const stepped = Math.max(state.minDomain, Math.min(state.maxDomain, Math.round((current + delta) * 2) / 2));
+      state.testPoint = stepped;
+      document.getElementById('test-point-input').value = stepped;
+      updateMembershipBadge();
+      renderMainCanvas();
+    }
+
+    function updateMembershipBadge() {
+      const x = state.testPoint;
+      const belongs = checkPointMembership(x);
+      const badge = document.getElementById('test-result-badge');
+
+      if (belongs) {
+        badge.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1.5";
+        badge.innerHTML = `
+          <span>✓</span>
+          <span>Il punto x = ${x} <strong>APPARTIENE</strong> all'intervallo (x ∈ I)</span>
+        `;
+      } else {
+        badge.className = "px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-rose-100 text-rose-800 border border-rose-300 flex items-center gap-1.5";
+        badge.innerHTML = `
+          <span>✕</span>
+          <span>Il punto x = ${x} <strong>NON APPARTIENE</strong> all'intervallo (x ∉ I)</span>
+        `;
+      }
+    }
+
+    function updateTestPointFromInput() {
+      const val = parseFloat(document.getElementById('test-point-input').value);
+      if (!isNaN(val)) {
+        state.testPoint = Math.max(-7, Math.min(7, val));
+        updateMembershipBadge();
+        renderMainCanvas();
+      }
+    }
+
+    function setupCanvas(canvas) {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.scale(dpr, dpr);
+      return { ctx, width: rect.width, height: rect.height };
+    }
+
+    function renderMainCanvas() {
+      const canvas = document.getElementById('number-line-canvas');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+
+      drawRealLine(ctx, width, height, {
+        a: state.a,
+        b: state.b,
+        aIncluded: state.aIncluded,
+        bIncluded: state.bIncluded,
+        infLeft: state.infLeft,
+        infRight: state.infRight,
+        testPoint: state.testPoint,
+        interactiveHandles: true
+      });
+    }
+
+    function drawRealLine(ctx, width, height, options) {
+      const { a, b, aIncluded, bIncluded, infLeft, infRight, testPoint } = options;
+
+      const paddingX = 40;
+      const centerY = height / 2;
+      const domainMin = state.minDomain;
+      const domainMax = state.maxDomain;
+
+      function valToX(v) {
+        return paddingX + ((v - domainMin) / (domainMax - domainMin)) * (width - 2 * paddingX);
+      }
+
+      ctx.clearRect(0, 0, width, height);
+
+      // 1. Draw Main Horizontal Axis
+      ctx.strokeStyle = '#94a3b8'; // Slate 400
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(paddingX - 15, centerY);
+      ctx.lineTo(width - paddingX + 15, centerY);
+      ctx.stroke();
+
+      // Right Arrow for +Infinity orientation
+      ctx.beginPath();
+      ctx.fillStyle = '#94a3b8';
+      ctx.moveTo(width - paddingX + 15, centerY);
+      ctx.lineTo(width - paddingX + 5, centerY - 6);
+      ctx.lineTo(width - paddingX + 5, centerY + 6);
+      ctx.closePath();
+      ctx.fill();
+
+      // Axis label 'x'
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'bold 12px monospace';
+      ctx.fillText('x', width - paddingX + 22, centerY + 4);
+
+      // 2. Draw Tick marks and integer coordinates
+      for (let v = domainMin; v <= domainMax; v++) {
+        const x = valToX(v);
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, centerY - 5);
+        ctx.lineTo(x, centerY + 5);
+        ctx.stroke();
+
+        ctx.fillStyle = (v === 0) ? '#1e293b' : '#64748b';
+        ctx.font = (v === 0) ? 'bold 12px sans-serif' : '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(v.toString(), x, centerY + 20);
+      }
+
+      // 3. Highlighted Interval Region
+      let startX = infLeft ? (paddingX - 14) : valToX(a);
+      let endX = infRight ? (width - paddingX + 14) : valToX(b);
+
+      if (startX > endX && !infLeft && !infRight) {
+        // Safe check in case of anomalous order
+        const temp = startX;
+        startX = endX;
+        endX = temp;
+      }
+
+      // Shaded background bar
+      ctx.fillStyle = 'rgba(99, 102, 241, 0.18)';
+      ctx.fillRect(startX, centerY - 14, Math.max(0, endX - startX), 28);
+
+      // Bold interval line
+      ctx.strokeStyle = '#4f46e5'; // Indigo 600
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(startX, centerY);
+      ctx.lineTo(endX, centerY);
+      ctx.stroke();
+
+      // Ray arrows if infinite
+      if (infLeft) {
+        ctx.fillStyle = '#4f46e5';
+        ctx.beginPath();
+        ctx.moveTo(startX, centerY);
+        ctx.lineTo(startX + 10, centerY - 6);
+        ctx.lineTo(startX + 10, centerY + 6);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      if (infRight) {
+        ctx.fillStyle = '#4f46e5';
+        ctx.beginPath();
+        ctx.moveTo(endX, centerY);
+        ctx.lineTo(endX - 10, centerY - 6);
+        ctx.lineTo(endX - 10, centerY + 6);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // 4. Draw Endpoints (a and b)
+      if (!infLeft) {
+        drawEndpointCircle(ctx, valToX(a), centerY, aIncluded, `a = ${a}`);
+      }
+      if (!infRight) {
+        drawEndpointCircle(ctx, valToX(b), centerY, bIncluded, `b = ${b}`);
+      }
+
+      // 5. Draw Probe / Test point marker
+      if (testPoint !== undefined && testPoint !== null) {
+        const testX = valToX(testPoint);
+        const inside = checkPointMembership(testPoint);
+
+        // Vertical indicator pin
+        ctx.strokeStyle = inside ? '#10b981' : '#f43f5e';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 3]);
+        ctx.beginPath();
+        ctx.moveTo(testX, centerY - 28);
+        ctx.lineTo(testX, centerY + 26);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Pointer triangle
+        ctx.fillStyle = inside ? '#10b981' : '#f43f5e';
+        ctx.beginPath();
+        ctx.moveTo(testX, centerY - 16);
+        ctx.lineTo(testX - 5, centerY - 26);
+        ctx.lineTo(testX + 5, centerY - 26);
+        ctx.closePath();
+        ctx.fill();
+
+        // Label
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`x₀=${testPoint}`, testX, centerY - 30);
+      }
+    }
+
+    function drawEndpointCircle(ctx, x, y, isIncluded, label) {
+      // Outer border / circle
+      ctx.save();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#4338ca'; // Indigo 700
+      
+      if (isIncluded) {
+        // Pallino pieno
+        ctx.fillStyle = '#4f46e5';
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        // Pallino vuoto
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // Label below axis
+      ctx.fillStyle = '#1e1b4b';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, y - 14);
+      ctx.restore();
+    }
+
+    function onSliderChange(endpoint, value) {
+      const numVal = parseInt(value, 10);
+      const errorDiv = document.getElementById('error-order-message');
+
+      if (endpoint === 'a') {
+        state.a = numVal;
+        document.getElementById('slider-a').value = state.a;
+        if (!state.infRight && state.a > state.b) {
+          state.b = state.a;
+          document.getElementById('slider-b').value = state.b;
+          document.getElementById('val-b-display').innerText = state.b;
+          errorDiv.classList.remove('hidden');
+        } else {
+          errorDiv.classList.add('hidden');
+        }
+        document.getElementById('val-a-display').innerText = state.a;
+      } else if (endpoint === 'b') {
+        state.b = numVal;
+        document.getElementById('slider-b').value = state.b;
+        if (!state.infLeft && state.b < state.a) {
+          state.a = state.b;
+          document.getElementById('slider-a').value = state.a;
+          document.getElementById('val-a-display').innerText = state.a;
+          errorDiv.classList.remove('hidden');
+        } else {
+          errorDiv.classList.add('hidden');
+        }
+        document.getElementById('val-b-display').innerText = state.b;
+      }
+
+      updateUI();
+    }
+
+    function toggleIncluded(endpoint, isChecked) {
+      if (endpoint === 'a') state.aIncluded = isChecked;
+      if (endpoint === 'b') state.bIncluded = isChecked;
+      updateUI();
+    }
+
+    function toggleInfLeft(isChecked) {
+      state.infLeft = isChecked;
+      const container = document.getElementById('container-a-controls');
+      const valDisplay = document.getElementById('val-a-display');
+      if (isChecked) {
+        container.classList.add('opacity-40', 'pointer-events-none');
+        valDisplay.innerHTML = '&minus;&infin;';
+      } else {
+        container.classList.remove('opacity-40', 'pointer-events-none');
+        valDisplay.innerText = state.a;
+      }
+      updateUI();
+    }
+
+    function toggleInfRight(isChecked) {
+      state.infRight = isChecked;
+      const container = document.getElementById('container-b-controls');
+      const valDisplay = document.getElementById('val-b-display');
+      if (isChecked) {
+        container.classList.add('opacity-40', 'pointer-events-none');
+        valDisplay.innerHTML = '+&infin;';
+      } else {
+        container.classList.remove('opacity-40', 'pointer-events-none');
+        valDisplay.innerText = state.b;
+      }
+      updateUI();
+    }
+
+    function toggleBracketStyle() {
+      state.useAlternativeBrackets = !state.useAlternativeBrackets;
+      const btn = document.getElementById('toggle-bracket-style');
+      if (state.useAlternativeBrackets) {
+        btn.innerText = "Italiano: ]a, b[";
+      } else {
+        btn.innerText = "Standard: (a, b)";
+      }
+      updateUI();
+    }
+
+    function loadPreset(key) {
+      const errorDiv = document.getElementById('error-order-message');
+      errorDiv.classList.add('hidden');
+
+      switch (key) {
+        case 'closed-bounded':
+          state.a = -2; state.b = 4;
+          state.aIncluded = true; state.bIncluded = true;
+          state.infLeft = false; state.infRight = false;
+          break;
+        case 'open-bounded':
+          state.a = -3; state.b = 2;
+          state.aIncluded = false; state.bIncluded = false;
+          state.infLeft = false; state.infRight = false;
+          break;
+        case 'semi-left':
+          state.a = -1; state.b = 3;
+          state.aIncluded = false; state.bIncluded = true;
+          state.infLeft = false; state.infRight = false;
+          break;
+        case 'unbounded-right':
+          state.a = 1; state.b = 5;
+          state.aIncluded = true;
+          state.infLeft = false; state.infRight = true;
+          break;
+        case 'unbounded-left':
+          state.a = -5; state.b = 0;
+          state.bIncluded = false;
+          state.infLeft = true; state.infRight = false;
+          break;
+        case 'all-reals':
+          state.infLeft = true; state.infRight = true;
+          break;
+      }
+
+      // Synchronize DOM inputs
+      document.getElementById('slider-a').value = state.a;
+      document.getElementById('val-a-display').innerText = state.a;
+      document.getElementById('slider-b').value = state.b;
+      document.getElementById('val-b-display').innerText = state.b;
+      
+      document.getElementById('check-a-included').checked = state.aIncluded;
+      document.getElementById('check-b-included').checked = state.bIncluded;
+      
+      document.getElementById('check-inf-left').checked = state.infLeft;
+      document.getElementById('check-inf-right').checked = state.infRight;
+
+      toggleInfLeft(state.infLeft);
+      toggleInfRight(state.infRight);
+
+      updateUI();
+    }
+
+    function resetLab() {
+      loadPreset('closed-bounded');
+      state.testPoint = 1;
+      document.getElementById('test-point-input').value = 1;
+      updateUI();
+    }
+
+    const canvasEl = document.getElementById('number-line-canvas');
+    let isDraggingTestPoint = false;
+
+    function getCanvasX(evt, canvas) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = (evt.touches && evt.touches.length > 0) ? evt.touches[0].clientX : evt.clientX;
+      return clientX - rect.left;
+    }
+
+    function xToVal(x, width) {
+      const paddingX = 40;
+      const ratio = (x - paddingX) / (width - 2 * paddingX);
+      const val = state.minDomain + ratio * (state.maxDomain - state.minDomain);
+      return Math.round(val * 2) / 2; // snap to nearest 0.5
+    }
+
+    canvasEl.addEventListener('mousedown', (e) => {
+      const rect = canvasEl.getBoundingClientRect();
+      const x = getCanvasX(e, canvasEl);
+      const val = xToVal(x, rect.width);
+      if (val >= state.minDomain && val <= state.maxDomain) {
+        state.testPoint = val;
+        document.getElementById('test-point-input').value = val;
+        isDraggingTestPoint = true;
+        updateMembershipBadge();
+        renderMainCanvas();
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDraggingTestPoint) return;
+      const rect = canvasEl.getBoundingClientRect();
+      const x = getCanvasX(e, canvasEl);
+      const val = Math.max(state.minDomain, Math.min(state.maxDomain, xToVal(x, rect.width)));
+      state.testPoint = val;
+      document.getElementById('test-point-input').value = val;
+      updateMembershipBadge();
+      renderMainCanvas();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDraggingTestPoint = false;
+    });
+
+    // iPad Touch and Apple Pencil support with non-scrolling scrub gesture
+    canvasEl.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        const rect = canvasEl.getBoundingClientRect();
+        const x = getCanvasX(e, canvasEl);
+        const val = xToVal(x, rect.width);
+        if (val >= state.minDomain && val <= state.maxDomain) {
+          state.testPoint = val;
+          document.getElementById('test-point-input').value = state.testPoint;
+          isDraggingTestPoint = true;
+          updateMembershipBadge();
+          renderMainCanvas();
+        }
+      }
+    }, { passive: true });
+
+    canvasEl.addEventListener('touchmove', (e) => {
+      if (isDraggingTestPoint && e.touches.length === 1) {
+        // Prevent iPad page scrolling while dragging on the number line
+        if (e.cancelable) e.preventDefault();
+        const rect = canvasEl.getBoundingClientRect();
+        const x = getCanvasX(e, canvasEl);
+        const val = Math.max(state.minDomain, Math.min(state.maxDomain, xToVal(x, rect.width)));
+        state.testPoint = val;
+        document.getElementById('test-point-input').value = state.testPoint;
+        updateMembershipBadge();
+        renderMainCanvas();
+      }
+    }, { passive: false });
+
+    canvasEl.addEventListener('touchend', () => {
+      isDraggingTestPoint = false;
+    });
+
+    // Touch support for phones and tablets
+    canvasEl.addEventListener('touchstart', (e) => {
+      const rect = canvasEl.getBoundingClientRect();
+      const x = getCanvasX(e, canvasEl);
+      const val = xToVal(x, rect.width);
+      state.testPoint = Math.max(state.minDomain, Math.min(state.maxDomain, val));
+      document.getElementById('test-point-input').value = state.testPoint;
+      updateMembershipBadge();
+      renderMainCanvas();
+    }, { passive: true });
+
+    const QUIZ_TYPES = ['GRAPH_TO_FORMULA', 'INEQ_TO_BRACKETS', 'MEMBERSHIP_CHECK', 'CLASSIFY_TYPE'];
+
+    function generateNewQuizQuestion() {
+      state.quizAnswered = false;
+      const feedbackBox = document.getElementById('quiz-feedback');
+      feedbackBox.classList.add('hidden');
+      document.getElementById('quiz-next-btn').classList.add('hidden');
+
+      const canvasContainer = document.getElementById('quiz-canvas-container');
+      const mathPrompt = document.getElementById('quiz-math-prompt');
+      const optionsContainer = document.getElementById('quiz-options-container');
+      optionsContainer.innerHTML = '';
+
+      // Pick random question type
+      const type = QUIZ_TYPES[Math.floor(Math.random() * QUIZ_TYPES.length)];
+      const difficultyTag = document.getElementById('quiz-difficulty');
+      const categoryTag = document.getElementById('quiz-category-tag');
+
+      // Random bounds
+      const a = Math.floor(Math.random() * 5) - 4; // -4 to 0
+      const b = a + Math.floor(Math.random() * 5) + 1; // a+1 to a+5
+      const aInc = Math.random() > 0.5;
+      const bInc = Math.random() > 0.5;
+
+      let question = {};
+
+      if (type === 'GRAPH_TO_FORMULA') {
+        categoryTag.innerText = "Da Grafico a Notazione";
+        difficultyTag.innerText = "Intermedio";
+        document.getElementById('quiz-question-text').innerHTML = "Quale intervallo algebrico corrisponde alla seguente rappresentazione sulla retta reale?";
+        
+        canvasContainer.classList.remove('hidden');
+        mathPrompt.classList.add('hidden');
+
+        question = {
+          type: 'GRAPH_TO_FORMULA',
+          a, b, aIncluded: aInc, bIncluded: bInc,
+          infLeft: false, infRight: false,
+          correctAnswer: `[${aInc ? '' : '('}${aInc ? '[' : ''}${a}, ${b}${bInc ? ']' : ')'}]`,
+          hint: "Fai attenzione al pallino: pieno significa parentesi quadra (estremo incluso), vuoto significa tonda (estremo escluso)."
+        };
+
+        renderQuizLine(a, b, aInc, bInc, false, false);
+
+        // Generate 4 bracket options
+        const options = [
+          { text: `${aInc ? '[' : '('}${a}, ${b}${bInc ? ']' : ')'}`, correct: true },
+          { text: `${!aInc ? '[' : '('}${a}, ${b}${bInc ? ']' : ')'}`, correct: false },
+          { text: `${aInc ? '[' : '('}${a}, ${b}${!bInc ? ']' : ')'}`, correct: false },
+          { text: `${!aInc ? '[' : '('}${a}, ${b}${!bInc ? ']' : ')'}`, correct: false }
+        ];
+        shuffleArray(options);
+        renderOptions(options, "La notazione corretta tiene conto del tipo di pallino agli estremi.");
+
+      } else if (type === 'INEQ_TO_BRACKETS') {
+        categoryTag.innerText = "Da Disequazione a Intervallo";
+        difficultyTag.innerText = "Base";
+        canvasContainer.classList.add('hidden');
+        mathPrompt.classList.remove('hidden');
+
+        const isUnbounded = Math.random() > 0.5;
+
+        if (isUnbounded) {
+          const isGreater = Math.random() > 0.5;
+          const isOrEqual = Math.random() > 0.5;
+          const signSymbol = isGreater ? (isOrEqual ? '\\ge' : '>') : (isOrEqual ? '\\le' : '<');
+          
+          document.getElementById('quiz-question-text').innerText = "Traduci la seguente disequazione in intervallo di numeri reali:";
+          katex.render(`x ${signSymbol} ${a}`, mathPrompt, { displayMode: true });
+
+          let correct = "";
+          let f1 = "", f2 = "", f3 = "";
+          if (isGreater) {
+            correct = `${isOrEqual ? '[' : '('}${a}, +\\infty)`;
+            f1 = `(-\\infty, ${a}${isOrEqual ? ']' : ')'}`;
+            f2 = `${!isOrEqual ? '[' : '('}${a}, +\\infty)`;
+            f3 = `(${a}, +\\infty]`;
+          } else {
+            correct = `(-\\infty, ${a}${isOrEqual ? ']' : ')'}`;
+            f1 = `${isOrEqual ? '[' : '('}${a}, +\\infty)`;
+            f2 = `(-\\infty, ${a}${!isOrEqual ? ']' : ')'}`;
+            f3 = `[-\\infty, ${a})`;
+          }
+
+          const options = [
+            { text: correct, correct: true, isMath: true },
+            { text: f1, correct: false, isMath: true },
+            { text: f2, correct: false, isMath: true },
+            { text: f3, correct: false, isMath: true }
+          ];
+          shuffleArray(options);
+          renderOptions(options, `La disequazione descrive una semiretta illimitata.`);
+        } else {
+          const leftEq = Math.random() > 0.5;
+          const rightEq = Math.random() > 0.5;
+          const lSign = leftEq ? '\\le' : '<';
+          const rSign = rightEq ? '\\le' : '<';
+
+          document.getElementById('quiz-question-text').innerText = "Qual è la scrittura equivalente mediante parentesi della disequazione:";
+          katex.render(`${a} ${lSign} x ${rSign} ${b}`, mathPrompt, { displayMode: true });
+
+          const correct = `${leftEq ? '[' : '('}${a}, ${b}${rightEq ? ']' : ')'}`;
+          const options = [
+            { text: correct, correct: true },
+            { text: `${!leftEq ? '[' : '('}${a}, ${b}${rightEq ? ']' : ')'}`, correct: false },
+            { text: `${leftEq ? '[' : '('}${a}, ${b}${!rightEq ? ']' : ')'}`, correct: false },
+            { text: `${!leftEq ? '[' : '('}${a}, ${b}${!rightEq ? ']' : ')'}`, correct: false }
+          ];
+          shuffleArray(options);
+          renderOptions(options, `I simboli ≤ richiedono parentesi quadra [, mentre < richiede parentesi tonda.`);
+        }
+
+      } else if (type === 'MEMBERSHIP_CHECK') {
+        categoryTag.innerText = "Verifica di Appartenenza";
+        difficultyTag.innerText = "Intermedio";
+        canvasContainer.classList.add('hidden');
+        mathPrompt.classList.remove('hidden');
+
+        // Test boundary inclusion
+        const testA = a;
+        const testVal = testA;
+        const aClosed = aInc;
+
+        const leftChar = aClosed ? '[' : '(';
+        const rightChar = bInc ? ']' : ')';
+
+        document.getElementById('quiz-question-text').innerHTML = `Il numero <strong>x = ${testVal}</strong> appartiene all'intervallo indicato?`;
+        katex.render(`I = ${leftChar}${a}, ${b}${rightChar}`, mathPrompt, { displayMode: true });
+
+        const isMember = aClosed;
+        const options = [
+          { text: `Sì, perché ${aClosed ? "l'estremo è incluso con parentesi quadra" : "è compreso"}`, correct: isMember },
+          { text: `No, perché ${!aClosed ? "la parentesi tonda esclude l'estremo" : "non è compreso"}`, correct: !isMember }
+        ];
+
+        renderOptions(options, `L'estremo ${a} è associato alla parentesi '${leftChar}'. Se la parentesi è tonda l'estremo è escluso.`);
+
+      } else if (type === 'CLASSIFY_TYPE') {
+        categoryTag.innerText = "Classificazione Teorica";
+        difficultyTag.innerText = "Base";
+        canvasContainer.classList.add('hidden');
+        mathPrompt.classList.remove('hidden');
+
+        document.getElementById('quiz-question-text').innerText = "Come si classifica il seguente intervallo reale?";
+        katex.render(`[-1, 5)`, mathPrompt, { displayMode: true });
+
+        const options = [
+          { text: "Limitato semiaperto a destra (chiuso a sinistra)", correct: true },
+          { text: "Limitato aperto", correct: false },
+          { text: "Illimitato superiormente", correct: false },
+          { text: "Limitato chiuso", correct: false }
+        ];
+        shuffleArray(options);
+        renderOptions(options, "Ha entrambi gli estremi finiti (limitato) con il sinistro incluso e il destro escluso.");
+      }
+
+      state.currentQuestion = question;
+    }
+
+    function renderOptions(options, explanation) {
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+
+      options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = "quiz-opt-btn p-3.5 rounded-xl border border-slate-200 bg-white hover:border-indigo-500 hover:bg-indigo-50/50 text-slate-800 text-sm font-semibold transition text-left flex items-center justify-between shadow-sm";
+        
+        let labelSpan = document.createElement('span');
+        if (opt.isMath) {
+          try {
+            katex.render(opt.text, labelSpan, { throwOnError: false });
+          } catch(e) {
+            labelSpan.innerText = opt.text;
+          }
+        } else {
+          labelSpan.innerText = opt.text;
+        }
+
+        const iconSpan = document.createElement('span');
+        iconSpan.className = "w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs text-slate-400 font-mono shrink-0";
+        iconSpan.innerText = String.fromCharCode(65 + idx);
+
+        btn.appendChild(labelSpan);
+        btn.appendChild(iconSpan);
+
+        btn.onclick = () => {
+          if (state.quizAnswered) return;
+          handleQuizSelection(opt.correct, btn, explanation);
+        };
+
+        container.appendChild(btn);
+      });
+    }
+
+    function handleQuizSelection(isCorrect, clickedBtn, explanation) {
+      state.quizAnswered = true;
+      const feedback = document.getElementById('quiz-feedback');
+      const nextBtn = document.getElementById('quiz-next-btn');
+
+      const allBtns = document.querySelectorAll('.quiz-opt-btn');
+      allBtns.forEach(b => b.classList.add('pointer-events-none'));
+
+      if (isCorrect) {
+        state.quizScore += 10;
+        state.quizStreak += 1;
+        clickedBtn.classList.remove('border-slate-200', 'bg-white');
+        clickedBtn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-900');
+
+        feedback.className = "p-4 rounded-xl text-sm leading-relaxed border bg-emerald-50 border-emerald-200 text-emerald-900";
+        feedback.innerHTML = `<strong>Corretto! 🎉</strong> +10 punti. ${explanation}`;
+      } else {
+        state.quizStreak = 0;
+        clickedBtn.classList.remove('border-slate-200', 'bg-white');
+        clickedBtn.classList.add('border-rose-500', 'bg-rose-50', 'text-rose-900');
+
+        feedback.className = "p-4 rounded-xl text-sm leading-relaxed border bg-rose-50 border-rose-200 text-rose-900";
+        feedback.innerHTML = `<strong>Non esatto.</strong> ${explanation}`;
+      }
+
+      feedback.classList.remove('hidden');
+      nextBtn.classList.remove('hidden');
+
+      // Update score display
+      document.getElementById('quiz-score').innerText = state.quizScore;
+      document.getElementById('quiz-streak').innerText = `🔥 ${state.quizStreak}`;
+    }
+
+    function showQuizHint() {
+      const hint = state.currentQuestion?.hint || "Osserva con attenzione la corrispondenza: parentesi quadra ↔ estremo compreso ↔ pallino pieno; parentesi tonda ↔ estremo escluso ↔ pallino vuoto.";
+      const feedback = document.getElementById('quiz-feedback');
+      feedback.className = "p-3.5 rounded-xl text-xs sm:text-sm bg-amber-50 border border-amber-200 text-amber-900";
+      feedback.innerHTML = `<strong>💡 Suggerimento:</strong> ${hint}`;
+      feedback.classList.remove('hidden');
+    }
+
+    function resetQuizStats() {
+      state.quizScore = 0;
+      state.quizStreak = 0;
+      document.getElementById('quiz-score').innerText = 0;
+      document.getElementById('quiz-streak').innerText = `🔥 0`;
+      generateNewQuizQuestion();
+    }
+
+    function renderQuizLine(a, b, aInc, bInc, infL, infR) {
+      const canvas = document.getElementById('quiz-number-line');
+      if (!canvas) return;
+      const { ctx, width, height } = setupCanvas(canvas);
+      drawRealLine(ctx, width, height, {
+        a, b, aIncluded: aInc, bIncluded: bInc,
+        infLeft: infL, infRight: infR,
+        testPoint: null,
+        interactiveHandles: false
+      });
+    }
+
+    function renderQuizCanvas() {
+      if (state.currentQuestion && state.currentQuestion.type === 'GRAPH_TO_FORMULA') {
+        const q = state.currentQuestion;
+        renderQuizLine(q.a, q.b, q.aIncluded, q.bIncluded, q.infLeft, q.infRight);
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    window.addEventListener('resize', () => {
+      renderMainCanvas();
+      renderQuizCanvas();
+    });
+
+    window.onload = function() {
+      updateUI();
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "\\(", right: "\\)", display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    };
+  </script>
+</body>
+</html>
