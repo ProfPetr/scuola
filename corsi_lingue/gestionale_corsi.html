@@ -149,7 +149,13 @@
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="sm:col-span-1">
             <label class="block text-xs font-semibold text-slate-600 mb-1">Docente del Modulo *</label>
-            <input type="text" id="module-teacher" placeholder="es. Prof. Mark Robinson" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+            <select id="module-teacher" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+              <option value="">-- Seleziona Docente --</option>
+              <option value="Gaboardi Laura">Gaboardi Laura</option>
+              <option value="Piumella Isabella">Piumella Isabella</option>
+              <option value="Ushakov Petr">Ushakov Petr</option>
+              <option value="Wieder Ada">Wieder Ada</option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-600 mb-1">Inizio Modulo</label>
@@ -525,15 +531,9 @@
     function createDefaultModuleData(moduleNum, courseId = currentCourseId) {
       const schedule = getDefaultModuleSchedule(courseId, moduleNum);
 
-      const defaultTeachers = {
-        1: courseId === 'es_gen' ? 'Prof.ssa Garcia' : 'Prof. David Miller',
-        2: courseId === 'es_gen' ? 'Prof. Carlos Fernandez' : 'Prof. Sarah Jenkins',
-        3: courseId === 'es_gen' ? 'Prof. Matteo Alvares' : 'Prof. Helen Clark'
-      };
-
       return {
         moduleNum: moduleNum,
-        teacher: defaultTeachers[moduleNum] || 'Docente incaricato',
+        teacher: '',
         startTime: schedule.start,
         endTime: schedule.end,
         topic: '',
@@ -768,7 +768,7 @@
     }
 
     // Input listeners to persist changes immediately
-    document.getElementById('module-teacher').addEventListener('input', (e) => {
+    document.getElementById('module-teacher').addEventListener('change', (e) => {
       getActiveModule().teacher = e.target.value;
       updateModuleTabsIndicators();
     });
