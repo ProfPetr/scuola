@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registro & Gestionale Corsi di Lingua</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .font-signature {
+      font-family: 'Caveat', cursive;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      body {
+        background: white !important;
+        color: black !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold text-slate-900 leading-tight">Academy Language Manager</h1>
+          <p class="text-xs text-slate-500 font-medium">Registro Elettronico & Integrazione Apple Numbers</p>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="flex items-center space-x-2">
+        <button id="btn-open-numbers-modal" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 text-xs font-semibold transition">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          Collega a Numbers
+        </button>
+        <button id="btn-print-report" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 text-xs font-semibold shadow-sm transition">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+          </svg>
+          Stampa Registro
+        </button>
+        <button id="btn-manage-students" class="inline-flex items-center px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          Anagrafica Studenti
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Top Configuration Bar: Date, Course & Modules -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-4 no-print">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+        <!-- Date Selector -->
+        <div class="md:col-span-3">
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Data Lezione</label>
+          <div class="relative">
+            <input type="date" id="lesson-date" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <!-- Course Picker Buttons -->
+        <div class="md:col-span-9">
+          <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Seleziona Corso</label>
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="course-buttons-container">
+            <!-- Buttons injected by JS: Inglese A2, B1, B2, C1, Spagnolo -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily 3 Modules Selector -->
+      <div class="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mr-1">Modulo Giornaliero:</span>
+          <div class="inline-flex p-1 bg-slate-100 rounded-xl space-x-1" id="module-tabs-container">
+            <button data-module="1" class="module-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Modulo 1</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 mod-indicator"></span>
+            </button>
+            <button data-module="2" class="module-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Modulo 2</span>
+              <span class="w-2 h-2 rounded-full bg-slate-300 mod-indicator"></span>
+            </button>
+            <button data-module="3" class="module-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5">
+              <span>Modulo 3</span>
+              <span class="w-2 h-2 rounded-full bg-slate-300 mod-indicator"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2 text-xs text-slate-500 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
+          <svg class="w-4 h-4 text-indigo-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <span>Fino a 3 moduli distinti con docenti, argomenti, orari e firme indipendenti.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Module Header: Teacher, Times & Topic -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Module Info & Topic -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center space-x-2">
+            <span id="active-module-badge" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-indigo-100 text-indigo-800">
+              MODULO 1
+            </span>
+            <span id="active-course-badge" class="px-2.5 py-0.5 rounded-md text-xs font-bold bg-blue-100 text-blue-800">
+              Inglese B1
+            </span>
+          </div>
+          <span class="text-xs text-slate-400 font-medium">I dati si salvano in tempo reale</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="sm:col-span-1">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Docente del Modulo *</label>
+            <input type="text" id="module-teacher" placeholder="es. Prof. Mark Robinson" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Inizio Modulo</label>
+            <input type="time" id="module-start-time" value="09:00" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Fine Modulo</label>
+            <input type="time" id="module-end-time" value="11:00" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Argomento della Lezione & Programma Svolto *</label>
+          <textarea id="module-topic" rows="3" placeholder="es. Present Perfect vs Past Simple; Esercizi di conversazione su viaggi ed esperienze passate; Eserciziario pag. 45-48." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition"></textarea>
+        </div>
+      </div>
+
+      <!-- Teacher Signature Pad -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center">
+              <svg class="w-4 h-4 mr-1 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+              Firma Digitale Docente
+            </label>
+            <span id="signature-status" class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">In attesa di firma</span>
+          </div>
+          <p class="text-xs text-slate-500 mb-2">Il docente firma con dito su touchscreen o mouse per validare il modulo.</p>
+          
+          <!-- Signature Canvas Area -->
+          <div class="relative w-full h-32 border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 overflow-hidden group hover:border-indigo-400 transition">
+            <canvas id="signature-pad" class="w-full h-full cursor-crosshair touch-none"></canvas>
+            <div id="signature-hint" class="absolute inset-0 flex items-center justify-center pointer-events-none text-slate-400 text-xs italic">
+              Firma qui con mouse o touch screen
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+          <button id="btn-clear-sig" class="text-xs text-rose-600 hover:text-rose-700 font-medium py-1 px-2 hover:bg-rose-50 rounded transition">
+            Cancella firma
+          </button>
+          <button id="btn-confirm-sig" class="text-xs bg-slate-800 hover:bg-slate-900 text-white font-medium py-1.5 px-3 rounded-lg transition shadow-sm">
+            Valida Firma
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Students Attendance Table -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="p-4 sm:p-5 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/50">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 flex items-center">
+            Registro Presenze del Modulo
+            <span id="student-count-badge" class="ml-2.5 px-2 py-0.5 text-xs font-semibold bg-slate-200 text-slate-700 rounded-full">0 studenti</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Segna orario effettivo di entrata ed uscita per ogni studente</p>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="flex items-center space-x-2">
+          <button id="btn-all-present" class="text-xs font-medium text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1.5 rounded-lg transition">
+            ✓ Tutti Presenti
+          </button>
+          <button id="btn-sync-times" class="text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 px-3 py-1.5 rounded-lg transition" title="Imposta l'orario di entrata e uscita uguale a quello del modulo per tutti i presenti">
+            ⏱ Allinea Orari
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-50 text-slate-500 uppercase text-[11px] font-bold border-b border-slate-200 tracking-wider">
+              <th class="py-3 px-4 w-12 text-center">#</th>
+              <th class="py-3 px-4">Studente</th>
+              <th class="py-3 px-4 w-44">Stato Presenza</th>
+              <th class="py-3 px-4 w-32">Ora Entrata</th>
+              <th class="py-3 px-4 w-32">Ora Uscita</th>
+              <th class="py-3 px-4">Note / Compiti</th>
+            </tr>
+          </thead>
+          <tbody id="attendance-tbody" class="divide-y divide-slate-100 text-slate-700 font-normal">
+            <!-- Dynamically populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty state when no students -->
+      <div id="empty-state" class="hidden p-8 text-center">
+        <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+          </svg>
+        </div>
+        <h3 class="text-sm font-bold text-slate-700">Nessuno studente iscritto a questo corso</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Aggiungi studenti tramite il pulsante "Anagrafica Studenti" o importali direttamente.</p>
+      </div>
+
+      <!-- Quick Summary Footer -->
+      <div class="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-600 gap-3">
+        <div class="flex items-center space-x-4" id="stats-summary">
+          <span>Presenti: <strong class="text-emerald-600 font-bold" id="stat-present">0</strong></span>
+          <span>Assenti: <strong class="text-rose-600 font-bold" id="stat-absent">0</strong></span>
+          <span>Ritardi/Anticipi: <strong class="text-amber-600 font-bold" id="stat-partial">0</strong></span>
+        </div>
+        <div class="text-[11px] text-slate-400">
+          I dati rimangono disponibili nella sessione del browser e possono essere sincronizzati in Numbers.
+        </div>
+      </div>
+    </div>
+
+    <!-- Apple Numbers Synchronization Box -->
+    <div class="bg-gradient-to-br from-emerald-900 to-teal-900 text-white rounded-2xl p-5 sm:p-6 shadow-md no-print">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="space-y-1.5 max-w-2xl">
+          <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-700/80 text-emerald-100 border border-emerald-500/40">
+            Integrazione Apple Numbers
+          </div>
+          <h3 class="text-base font-bold text-white">Come collegare il registro a un documento Numbers condiviso</h3>
+          <p class="text-xs text-emerald-100/90 leading-relaxed">
+            Apple Numbers condiviso su iCloud funziona nativamente importando tabelle strutturate. Puoi cliccare su <strong>"Copia Tabella per Numbers"</strong> e fare semplicemente <strong>⌘ + V</strong> (Incolla) nel foglio del corso, oppure scaricare il file CSV configurato per Numbers con separatori standard italiani.
+          </p>
+        </div>
+        <div class="flex flex-wrap sm:flex-nowrap gap-2">
+          <button id="btn-quick-copy-numbers" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg transition flex items-center justify-center">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+            </svg>
+            Copia per Numbers (Incolla diretto)
+          </button>
+          <button id="btn-quick-download-csv" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 transition flex items-center justify-center">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            Scarica .CSV per Numbers
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Print Register View (Visible only during window.print()) -->
+  <div id="print-sheet" class="print-only hidden p-8 max-w-4xl mx-auto bg-white text-black">
+    <div class="border-b-2 border-black pb-4 mb-4 flex justify-between items-end">
+      <div>
+        <h1 class="text-2xl font-bold uppercase tracking-wider">Registro delle Lezioni e Presenze</h1>
+        <p class="text-sm font-medium">Scuola di Lingue &bull; Certificazioni Internazionali</p>
+      </div>
+      <div class="text-right text-xs">
+        <p>Data: <strong id="print-date"></strong></p>
+        <p>Corso: <strong id="print-course"></strong></p>
+      </div>
+    </div>
+
+    <!-- 3 Modules Summary in Print -->
+    <div id="print-modules-container" class="space-y-6">
+      <!-- Injected during print preparation -->
+    </div>
+  </div>
+
+  <!-- Modal: Apple Numbers Hub -->
+  <div id="numbers-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-gradient-to-r from-emerald-600 to-teal-700 text-white flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 bg-white/20 rounded-lg">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Integrazione e Sincronizzazione con Apple Numbers</h3>
+            <p class="text-xs text-emerald-100">Esporta o copia i dati per il foglio Numbers condiviso</p>
+          </div>
+        </div>
+        <button id="btn-close-numbers-modal" class="text-white/80 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5">
+        <!-- Steps explanation -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Istruzioni d'uso con iCloud Numbers</h4>
+          <ol class="text-xs text-slate-600 space-y-2 list-decimal list-inside">
+            <li><strong>Opzione A (Copia e Incolla Istantaneo):</strong> Clicca su <em>"Copia Modulo Corrente"</em> o <em>"Copia Tutta la Giornata (3 Moduli)"</em>. Vai nel foglio Numbers condiviso e premi <strong>⌘ + V</strong> (o Modifica &rarr; Incolla). Verrà creata una tabella perfetta con tutte le intestazioni!</li>
+            <li><strong>Opzione B (File CSV):</strong> Scarica il file CSV. In Numbers, fai <em>File &rarr; Apri...</em> o trascina il CSV nel tuo foglio Numbers. È già formattato con codifica UTF-8 e delimitatore punto e virgola standard italiano.</li>
+          </ol>
+        </div>
+
+        <!-- Action Export Buttons -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <button id="btn-copy-module-tsv" class="p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/50 text-left transition group">
+            <div class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 flex items-center">
+              <span>📋 Copia Modulo Attivo</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Copia negli appunti pronto per incollare su Numbers</p>
+          </button>
+
+          <button id="btn-copy-day-tsv" class="p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/50 text-left transition group">
+            <div class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 flex items-center">
+              <span>📑 Copia Tutti i 3 Moduli</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Genera il riassunto dell'intera giornata per Numbers</p>
+          </button>
+
+          <button id="btn-download-csv-modal" class="p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/50 text-left transition group">
+            <div class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 flex items-center">
+              <span>📥 Scarica CSV Modulo</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">File .csv compatibile al 100% con Numbers Mac/iPad</p>
+          </button>
+
+          <button id="btn-download-all-csv" class="p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 bg-white hover:bg-emerald-50/50 text-left transition group">
+            <div class="text-xs font-bold text-slate-900 group-hover:text-emerald-700 flex items-center">
+              <span>📦 Scarica CSV Giornaliero (3 Moduli)</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-1">Tutti i moduli e presenze unificate per la data</p>
+          </button>
+        </div>
+
+        <div id="numbers-feedback" class="hidden p-3 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold text-center animate-pulse">
+          Tabella copiata negli appunti! Apri Numbers e premi Incolla (⌘ + V).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Student Management (Anagrafica) -->
+  <div id="students-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+      <div class="p-5 bg-slate-900 text-white flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base">Anagrafica Studenti per Corso</h3>
+          <p class="text-xs text-slate-400">Gestisci gli elenchi dei partecipanti per ogni livello</p>
+        </div>
+        <button id="btn-close-students-modal" class="text-slate-400 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <!-- Course selection in modal -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Seleziona Corso da Modificare:</label>
+          <select id="modal-course-select" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium text-slate-800">
+            <!-- options inserted by JS -->
+          </select>
+        </div>
+
+        <!-- Add student form -->
+        <div class="flex gap-2">
+          <input type="text" id="new-student-name" placeholder="Cognome e Nome studente" class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <button id="btn-add-student" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl transition">
+            + Aggiungi
+          </button>
+        </div>
+
+        <!-- Students list for current modal course -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-semibold text-slate-600">Studenti iscritti (<span id="modal-students-count">0</span>):</label>
+            <button id="btn-reset-default-students" class="text-[11px] text-indigo-600 hover:underline">Ripristina demo</button>
+          </div>
+          <div id="modal-students-list" class="max-h-60 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-xl bg-slate-50 p-2 space-y-1">
+            <!-- List populated dynamically -->
+          </div>
+        </div>
+
+        <div class="flex justify-end pt-2 border-t border-slate-100">
+          <button id="btn-save-students-modal" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition">
+            Fatto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Box -->
+  <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 text-xs font-medium border border-slate-700">
+      <span id="toast-icon">✓</span>
+      <span id="toast-message">Operazione completata con successo</span>
+    </div>
+  </div>
+
+  <script>
+    // Initial Courses Definition
+    const COURSES = [
+      { id: 'en_a2', name: 'Inglese A2', level: 'A2', lang: 'EN', color: 'indigo' },
+      { id: 'en_b1', name: 'Inglese B1', level: 'B1', lang: 'EN', color: 'blue' },
+      { id: 'en_b2', name: 'Inglese B2', level: 'B2', lang: 'EN', color: 'cyan' },
+      { id: 'en_c1', name: 'Inglese C1', level: 'C1', lang: 'EN', color: 'violet' },
+      { id: 'es_gen', name: 'Corso Spagnolo', level: 'Spagnolo', lang: 'ES', color: 'amber' }
+    ];
+
+    // Default Students Roster per Course
+    let studentRosters = {
+      en_a2: [
+        { id: 's1', name: 'Rossi Mario' },
+        { id: 's2', name: 'Bianchi Lucia' },
+        { id: 's3', name: 'Ferrari Alessandro' },
+        { id: 's4', name: 'Esposito Sofia' }
+      ],
+      en_b1: [
+        { id: 's5', name: 'Moretti Giulia' },
+        { id: 's6', name: 'Conti Matteo' },
+        { id: 's7', name: 'Marino Francesca' },
+        { id: 's8', name: 'Galli Andrea' },
+        { id: 's9', name: 'Ricci Elena' }
+      ],
+      en_b2: [
+        { id: 's10', name: 'De Luca Davide' },
+        { id: 's11', name: 'Barbieri Martina' },
+        { id: 's12', name: 'Fontana Simone' },
+        { id: 's13', name: 'Santoro Valentina' }
+      ],
+      en_c1: [
+        { id: 's14', name: 'Rinaldi Lorenzo' },
+        { id: 's15', name: 'Caruso Beatrice' },
+        { id: 's16', name: 'Gatti Tommaso' }
+      ],
+      es_gen: [
+        { id: 's17', name: 'Romano Camilla' },
+        { id: 's18', name: 'Costa Filippo' },
+        { id: 's19', name: 'Serra Veronica' },
+        { id: 's20', name: 'Lombardi Gabriele' }
+      ]
+    };
+
+    // State object: registry data indexed by "DATE_COURSEID"
+    // registry[key] = { modules: { '1': {...}, '2': {...}, '3': {...} } }
+    let registryStore = {};
+
+    // Current selection pointers
+    let currentDate = new Date().toISOString().split('T')[0];
+    let currentCourseId = 'en_b1';
+    let currentModuleNum = 1;
+
+    function getStorageKey(date = currentDate, courseId = currentCourseId) {
+      return `${date}___${courseId}`;
+    }
+
+    function createDefaultModuleData(moduleNum) {
+      const defaultTimes = {
+        1: { start: '09:00', end: '11:00' },
+        2: { start: '11:15', end: '13:15' },
+        3: { start: '14:00', end: '16:00' }
+      };
+
+      const defaultTeachers = {
+        1: 'Prof. David Miller',
+        2: 'Prof. Sarah Jenkins',
+        3: 'Prof. Carlos Fernandez'
+      };
+
+      return {
+        moduleNum: moduleNum,
+        teacher: defaultTeachers[moduleNum] || 'Docente incaricato',
+        startTime: defaultTimes[moduleNum]?.start || '09:00',
+        endTime: defaultTimes[moduleNum]?.end || '11:00',
+        topic: '',
+        signatureDataUrl: null,
+        signedAt: null,
+        attendance: {} // studentId -> { status: 'present'|'absent'|'late'|'early_exit', entryTime, exitTime, notes }
+      };
+    }
+
+    function getOrCreateDayData(date = currentDate, courseId = currentCourseId) {
+      const key = getStorageKey(date, courseId);
+      if (!registryStore[key]) {
+        registryStore[key] = {
+          date: date,
+          courseId: courseId,
+          modules: {
+            1: createDefaultModuleData(1),
+            2: createDefaultModuleData(2),
+            3: createDefaultModuleData(3)
+          }
+        };
+      }
+      return registryStore[key];
+    }
+
+    function getActiveModule() {
+      const dayData = getOrCreateDayData();
+      return dayData.modules[currentModuleNum];
+    }
+
+    const canvas = document.getElementById('signature-pad');
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasDrawn = false;
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      // Handle high DPI displays
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      redrawCurrentSignature();
+    }
+
+    function startPosition(e) {
+      isDrawing = true;
+      hasDrawn = true;
+      document.getElementById('signature-hint').classList.add('hidden');
+      draw(e);
+    }
+
+    function endPosition() {
+      if (!isDrawing) return;
+      isDrawing = false;
+      ctx.beginPath();
+      // Auto-save in active module state
+      saveSignatureState();
+    }
+
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.left,
+        y: clientY - rect.top
+      };
+    }
+
+    function draw(e) {
+      if (!isDrawing) return;
+      e.preventDefault();
+      const coords = getCanvasCoordinates(e);
+
+      ctx.lineWidth = 2.2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#1e1b4b'; // deep indigo ink color
+
+      ctx.lineTo(coords.x, coords.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(coords.x, coords.y);
+    }
+
+    function clearSignaturePad() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const mod = getActiveModule();
+      mod.signatureDataUrl = null;
+      mod.signedAt = null;
+      hasDrawn = false;
+      document.getElementById('signature-hint').classList.remove('hidden');
+      updateSignatureBadge(false);
+      showToast('Firma rimossa per questo modulo', 'ℹ️');
+    }
+
+    function redrawCurrentSignature() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const mod = getActiveModule();
+      const hint = document.getElementById('signature-hint');
+
+      if (mod.signatureDataUrl) {
+        hint.classList.add('hidden');
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, canvas.getBoundingClientRect().width, canvas.getBoundingClientRect().height);
+        };
+        img.src = mod.signatureDataUrl;
+        updateSignatureBadge(true, mod.signedAt);
+      } else {
+        hint.classList.remove('hidden');
+        updateSignatureBadge(false);
+      }
+    }
+
+    function saveSignatureState() {
+      const mod = getActiveModule();
+      mod.signatureDataUrl = canvas.toDataURL();
+      mod.signedAt = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+      updateSignatureBadge(true, mod.signedAt);
+    }
+
+    function updateSignatureBadge(isSigned, timeStr = '') {
+      const badge = document.getElementById('signature-status');
+      if (isSigned) {
+        badge.className = 'text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200';
+        badge.textContent = `Firmato ore ${timeStr || 'OK'}`;
+      } else {
+        badge.className = 'text-[11px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded';
+        badge.textContent = 'In attesa di firma';
+      }
+      updateModuleTabsIndicators();
+    }
+
+    // Attach Signature listeners
+    canvas.addEventListener('mousedown', startPosition);
+    canvas.addEventListener('mouseup', endPosition);
+    canvas.addEventListener('mouseleave', endPosition);
+    canvas.addEventListener('mousemove', draw);
+
+    canvas.addEventListener('touchstart', startPosition, { passive: false });
+    canvas.addEventListener('touchend', endPosition);
+    canvas.addEventListener('touchmove', draw, { passive: false });
+
+    document.getElementById('btn-clear-sig').addEventListener('click', clearSignaturePad);
+    document.getElementById('btn-confirm-sig').addEventListener('click', () => {
+      saveSignatureState();
+      showToast('Firma docente registrata correttamente!', '✍️');
+    });
+
+    function renderCourseButtons() {
+      const container = document.getElementById('course-buttons-container');
+      container.innerHTML = '';
+
+      COURSES.forEach(course => {
+        const isSelected = course.id === currentCourseId;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `px-3 py-2 rounded-xl text-xs font-bold border transition flex items-center justify-center space-x-1.5 ${
+          isSelected 
+            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' 
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+        }`;
+        btn.innerHTML = `
+          <span>${course.name}</span>
+        `;
+        btn.addEventListener('click', () => {
+          currentCourseId = course.id;
+          renderCourseButtons();
+          loadActiveView();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function updateModuleTabsIndicators() {
+      const dayData = getOrCreateDayData();
+      document.querySelectorAll('.module-tab-btn').forEach(btn => {
+        const modNum = parseInt(btn.dataset.module);
+        const mod = dayData.modules[modNum];
+        const isCurrent = modNum === currentModuleNum;
+        
+        // Active visual style
+        if (isCurrent) {
+          btn.className = 'module-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 bg-white text-indigo-700 shadow-sm';
+        } else {
+          btn.className = 'module-tab-btn px-4 py-1.5 rounded-lg text-xs font-bold transition flex items-center space-x-1.5 text-slate-600 hover:text-slate-900';
+        }
+
+        // Indicator dot (green if signed or filled)
+        const dot = btn.querySelector('.mod-indicator');
+        if (mod.signatureDataUrl || mod.topic.trim().length > 0) {
+          dot.className = 'w-2 h-2 rounded-full bg-emerald-500 mod-indicator';
+          dot.title = 'Modulo compilato';
+        } else {
+          dot.className = 'w-2 h-2 rounded-full bg-slate-300 mod-indicator';
+          dot.title = 'Modulo non compilato';
+        }
+      });
+    }
+
+    function loadActiveView() {
+      const dayData = getOrCreateDayData();
+      const mod = dayData.modules[currentModuleNum];
+      const activeCourse = COURSES.find(c => c.id === currentCourseId);
+
+      // Update Badges
+      document.getElementById('active-module-badge').textContent = `MODULO ${currentModuleNum}`;
+      document.getElementById('active-course-badge').textContent = activeCourse.name;
+
+      // Update Form Inputs
+      const teacherInput = document.getElementById('module-teacher');
+      const startInput = document.getElementById('module-start-time');
+      const endInput = document.getElementById('module-end-time');
+      const topicInput = document.getElementById('module-topic');
+
+      teacherInput.value = mod.teacher || '';
+      startInput.value = mod.startTime || '09:00';
+      endInput.value = mod.endTime || '11:00';
+      topicInput.value = mod.topic || '';
+
+      // Redraw Signature Pad
+      redrawCurrentSignature();
+
+      // Render Attendance Table
+      renderAttendanceTable();
+
+      // Update Tab dots
+      updateModuleTabsIndicators();
+    }
+
+    // Input listeners to persist changes immediately
+    document.getElementById('module-teacher').addEventListener('input', (e) => {
+      getActiveModule().teacher = e.target.value;
+      updateModuleTabsIndicators();
+    });
+    document.getElementById('module-start-time').addEventListener('change', (e) => {
+      getActiveModule().startTime = e.target.value;
+    });
+    document.getElementById('module-end-time').addEventListener('change', (e) => {
+      getActiveModule().endTime = e.target.value;
+    });
+    document.getElementById('module-topic').addEventListener('input', (e) => {
+      getActiveModule().topic = e.target.value;
+      updateModuleTabsIndicators();
+    });
+
+    // Date Picker listener
+    const dateInput = document.getElementById('lesson-date');
+    dateInput.value = currentDate;
+    dateInput.addEventListener('change', (e) => {
+      currentDate = e.target.value;
+      loadActiveView();
+      showToast(`Data cambiata a: ${formatItalianDate(currentDate)}`, '📅');
+    });
+
+    // Module Switch listener
+    document.querySelectorAll('.module-tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentModuleNum = parseInt(btn.dataset.module);
+        loadActiveView();
+      });
+    });
+
+    function renderAttendanceTable() {
+      const tbody = document.getElementById('attendance-tbody');
+      const emptyState = document.getElementById('empty-state');
+      const students = studentRosters[currentCourseId] || [];
+      const mod = getActiveModule();
+
+      document.getElementById('student-count-badge').textContent = `${students.length} studenti`;
+      tbody.innerHTML = '';
+
+      if (students.length === 0) {
+        emptyState.classList.remove('hidden');
+        updateStatsCounters();
+        return;
+      } else {
+        emptyState.classList.add('hidden');
+      }
+
+      students.forEach((student, index) => {
+        // Ensure student has record in current module
+        if (!mod.attendance[student.id]) {
+          mod.attendance[student.id] = {
+            status: 'present',
+            entryTime: mod.startTime || '09:00',
+            exitTime: mod.endTime || '11:00',
+            notes: ''
+          };
+        }
+
+        const rec = mod.attendance[student.id];
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition border-b border-slate-100';
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-center text-xs text-slate-400 font-semibold">${index + 1}</td>
+          <td class="py-3 px-4 font-semibold text-slate-900">${student.name}</td>
+          <td class="py-3 px-4">
+            <select data-student="${student.id}" class="status-select text-xs font-semibold rounded-lg px-2.5 py-1.5 border transition ${
+              rec.status === 'present' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+              rec.status === 'absent' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+              rec.status === 'late' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+              'bg-blue-50 text-blue-700 border-blue-200'
+            }">
+              <option value="present" ${rec.status === 'present' ? 'selected' : ''}>Presente</option>
+              <option value="absent" ${rec.status === 'absent' ? 'selected' : ''}>Assente</option>
+              <option value="late" ${rec.status === 'late' ? 'selected' : ''}>Entrata in ritardo</option>
+              <option value="early_exit" ${rec.status === 'early_exit' ? 'selected' : ''}>Uscita anticipata</option>
+            </select>
+          </td>
+          <td class="py-3 px-4">
+            <input type="time" data-student="${student.id}" class="entry-time-input bg-slate-50 border border-slate-200 text-xs rounded-lg px-2 py-1 w-28 text-slate-700 focus:bg-white" value="${rec.entryTime}" ${rec.status === 'absent' ? 'disabled' : ''}>
+          </td>
+          <td class="py-3 px-4">
+            <input type="time" data-student="${student.id}" class="exit-time-input bg-slate-50 border border-slate-200 text-xs rounded-lg px-2 py-1 w-28 text-slate-700 focus:bg-white" value="${rec.exitTime}" ${rec.status === 'absent' ? 'disabled' : ''}>
+          </td>
+          <td class="py-3 px-4">
+            <input type="text" data-student="${student.id}" placeholder="Note o compiti svolti..." class="notes-input bg-transparent border-b border-dashed border-slate-300 text-xs py-1 px-1 w-full text-slate-600 focus:outline-none focus:border-indigo-500" value="${rec.notes || ''}">
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+
+      attachAttendanceRowListeners();
+      updateStatsCounters();
+    }
+
+    function attachAttendanceRowListeners() {
+      const mod = getActiveModule();
+
+      document.querySelectorAll('.status-select').forEach(select => {
+        select.addEventListener('change', (e) => {
+          const stId = e.target.dataset.student;
+          const status = e.target.value;
+          mod.attendance[stId].status = status;
+
+          const tr = e.target.closest('tr');
+          const entryInp = tr.querySelector('.entry-time-input');
+          const exitInp = tr.querySelector('.exit-time-input');
+
+          if (status === 'absent') {
+            entryInp.disabled = true;
+            exitInp.disabled = true;
+            entryInp.classList.add('opacity-40');
+            exitInp.classList.add('opacity-40');
+          } else {
+            entryInp.disabled = false;
+            exitInp.disabled = false;
+            entryInp.classList.remove('opacity-40');
+            if (entryInp.value === '' || entryInp.value === '--:--') {
+              entryInp.value = mod.startTime;
+              mod.attendance[stId].entryTime = mod.startTime;
+            }
+            if (exitInp.value === '' || exitInp.value === '--:--') {
+              exitInp.value = mod.endTime;
+              mod.attendance[stId].exitTime = mod.endTime;
+            }
+          }
+
+          // Recolor select
+          e.target.className = `status-select text-xs font-semibold rounded-lg px-2.5 py-1.5 border transition ${
+            status === 'present' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+            status === 'absent' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+            status === 'late' ? 'bg-amber-50 text-amber-700 border-amber-200' :
+            'bg-blue-50 text-blue-700 border-blue-200'
+          }`;
+
+          updateStatsCounters();
+        });
+      });
+
+      document.querySelectorAll('.entry-time-input').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const stId = e.target.dataset.student;
+          mod.attendance[stId].entryTime = e.target.value;
+        });
+      });
+
+      document.querySelectorAll('.exit-time-input').forEach(inp => {
+        inp.addEventListener('change', (e) => {
+          const stId = e.target.dataset.student;
+          mod.attendance[stId].exitTime = e.target.value;
+        });
+      });
+
+      document.querySelectorAll('.notes-input').forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const stId = e.target.dataset.student;
+          mod.attendance[stId].notes = e.target.value;
+        });
+      });
+    }
+
+    function updateStatsCounters() {
+      const mod = getActiveModule();
+      const records = Object.values(mod.attendance);
+      let present = 0, absent = 0, partial = 0;
+
+      records.forEach(r => {
+        if (r.status === 'present') present++;
+        else if (r.status === 'absent') absent++;
+        else partial++;
+      });
+
+      document.getElementById('stat-present').textContent = present;
+      document.getElementById('stat-absent').textContent = absent;
+      document.getElementById('stat-partial').textContent = partial;
+    }
+
+    // Quick Action: All Present
+    document.getElementById('btn-all-present').addEventListener('click', () => {
+      const mod = getActiveModule();
+      const students = studentRosters[currentCourseId] || [];
+      students.forEach(s => {
+        if (!mod.attendance[s.id]) {
+          mod.attendance[s.id] = {};
+        }
+        mod.attendance[s.id].status = 'present';
+        mod.attendance[s.id].entryTime = mod.startTime;
+        mod.attendance[s.id].exitTime = mod.endTime;
+      });
+      renderAttendanceTable();
+      showToast('Tutti gli studenti contrassegnati come Presenti', '✅');
+    });
+
+    // Quick Action: Sync times
+    document.getElementById('btn-sync-times').addEventListener('click', () => {
+      const mod = getActiveModule();
+      const students = studentRosters[currentCourseId] || [];
+      students.forEach(s => {
+        if (mod.attendance[s.id] && mod.attendance[s.id].status !== 'absent') {
+          mod.attendance[s.id].entryTime = mod.startTime;
+          mod.attendance[s.id].exitTime = mod.endTime;
+        }
+      });
+      renderAttendanceTable();
+      showToast('Orari di entrata e uscita sincronizzati con il modulo', '⏱');
+    });
+
+    function formatItalianDate(isoDate) {
+      if (!isoDate) return '';
+      const [year, month, day] = isoDate.split('-');
+      return `${day}/${month}/${year}`;
+    }
+
+    function generateTSVForModule(date, courseId, moduleNum) {
+      const dayData = getOrCreateDayData(date, courseId);
+      const mod = dayData.modules[moduleNum];
+      const course = COURSES.find(c => c.id === courseId);
+      const students = studentRosters[courseId] || [];
+
+      let rows = [];
+      rows.push(['Data', 'Corso', 'Modulo', 'Docente', 'Inizio', 'Fine', 'Argomento Lezione', 'Firma Docente'].join('\t'));
+      rows.push([
+        formatItalianDate(date),
+        course.name,
+        `Modulo ${moduleNum}`,
+        mod.teacher || 'N.D.',
+        mod.startTime,
+        mod.endTime,
+        `"${(mod.topic || '').replace(/"/g, '""')}"`,
+        mod.signedAt ? `Firmato digitalmente (ore ${mod.signedAt})` : 'Non firmato'
+      ].join('\t'));
+
+      rows.push(''); // blank row
+      rows.push(['#', 'Nome Studente', 'Stato Presenza', 'Ora Entrata', 'Ora Uscita', 'Note'].join('\t'));
+
+      students.forEach((s, idx) => {
+        const att = mod.attendance[s.id] || { status: 'assente', entryTime: '', exitTime: '', notes: '' };
+        const statusMap = {
+          present: 'Presente',
+          absent: 'Assente',
+          late: 'Ritardo',
+          early_exit: 'Uscita Anticipata'
+        };
+
+        rows.push([
+          idx + 1,
+          s.name,
+          statusMap[att.status] || att.status,
+          att.status === 'absent' ? '-' : att.entryTime,
+          att.status === 'absent' ? '-' : att.exitTime,
+          `"${(att.notes || '').replace(/"/g, '""')}"`
+        ].join('\t'));
+      });
+
+      return rows.join('\r\n');
+    }
+
+    function generateTSVForWholeDay(date, courseId) {
+      let combined = [];
+      for (let m = 1; m <= 3; m++) {
+        combined.push(`=== ${COURSES.find(c=>c.id===courseId).name} - MODULO ${m} (${formatItalianDate(date)}) ===`);
+        combined.push(generateTSVForModule(date, courseId, m));
+        combined.push('\r\n\r\n');
+      }
+      return combined.join('\r\n');
+    }
+
+    function generateCSV(moduleOnly = true) {
+      // Numbers expects semicolons ';' as delimiter in Italian/European locale
+      const tsvContent = moduleOnly 
+        ? generateTSVForModule(currentDate, currentCourseId, currentModuleNum)
+        : generateTSVForWholeDay(currentDate, currentCourseId);
+
+      // Convert tabs to semicolons for Italian Numbers
+      const lines = tsvContent.split('\r\n');
+      const csvLines = lines.map(line => {
+        if (line.startsWith('===')) return line;
+        return line.split('\t').join(';');
+      });
+
+      // Add UTF-8 BOM so Apple Numbers opens accented characters like 'è', 'à', 'ò' flawlessly
+      return '\uFEFF' + csvLines.join('\r\n');
+    }
+
+    function copyToClipboard(text) {
+      // Reliable cross-iframe copy method
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      let success = false;
+      try {
+        success = document.execCommand('copy');
+      } catch (err) {
+        success = false;
+      }
+      document.body.removeChild(textArea);
+      return success;
+    }
+
+    function downloadFile(content, fileName, mimeType = 'text/csv;charset=utf-8;') {
+      const blob = new Blob([content], { type: mimeType });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    const numbersModal = document.getElementById('numbers-modal');
+    document.getElementById('btn-open-numbers-modal').addEventListener('click', () => {
+      numbersModal.classList.remove('hidden');
+    });
+    document.getElementById('btn-close-numbers-modal').addEventListener('click', () => {
+      numbersModal.classList.add('hidden');
+      document.getElementById('numbers-feedback').classList.add('hidden');
+    });
+
+    function showNumbersFeedback(msg) {
+      const fb = document.getElementById('numbers-feedback');
+      fb.textContent = msg;
+      fb.classList.remove('hidden');
+      setTimeout(() => {
+        fb.classList.add('hidden');
+      }, 4000);
+    }
+
+    // 1. Quick Copy Active Module TSV (Numbers paste ready)
+    function executeCopyModuleTSV() {
+      const tsv = generateTSVForModule(currentDate, currentCourseId, currentModuleNum);
+      if (copyToClipboard(tsv)) {
+        showNumbersFeedback('Modulo copiato! Apri Numbers condiviso e premi ⌘+V.');
+        showToast('Modulo copiato negli appunti per Numbers!', '📋');
+      } else {
+        showToast('Errore durante la copia negli appunti', '⚠️');
+      }
+    }
+
+    // 2. Copy Whole Day (All 3 modules)
+    function executeCopyDayTSV() {
+      const tsv = generateTSVForWholeDay(currentDate, currentCourseId);
+      if (copyToClipboard(tsv)) {
+        showNumbersFeedback('Tutti i 3 moduli copiati! Incolla su Numbers con ⌘+V.');
+        showToast('Intera giornata copiata per Numbers!', '📑');
+      } else {
+        showToast('Errore durante la copia negli appunti', '⚠️');
+      }
+    }
+
+    document.getElementById('btn-copy-module-tsv').addEventListener('click', executeCopyModuleTSV);
+    document.getElementById('btn-quick-copy-numbers').addEventListener('click', executeCopyModuleTSV);
+    document.getElementById('btn-copy-day-tsv').addEventListener('click', executeCopyDayTSV);
+
+    // 3. Download CSV for Numbers
+    function executeDownloadModuleCSV() {
+      const csv = generateCSV(true);
+      const courseName = COURSES.find(c => c.id === currentCourseId).name.replace(/\s+/g, '_');
+      const filename = `Registro_${courseName}_Mod${currentModuleNum}_${currentDate}.csv`;
+      downloadFile(csv, filename);
+      showToast(`Scaricato ${filename}`, '📥');
+    }
+
+    function executeDownloadDayCSV() {
+      const csv = generateCSV(false);
+      const courseName = COURSES.find(c => c.id === currentCourseId).name.replace(/\s+/g, '_');
+      const filename = `Registro_${courseName}_3Moduli_${currentDate}.csv`;
+      downloadFile(csv, filename);
+      showToast(`Scaricato ${filename}`, '📦');
+    }
+
+    document.getElementById('btn-download-csv-modal').addEventListener('click', executeDownloadModuleCSV);
+    document.getElementById('btn-quick-download-csv').addEventListener('click', executeDownloadModuleCSV);
+    document.getElementById('btn-download-all-csv').addEventListener('click', executeDownloadDayCSV);
+
+    const studentsModal = document.getElementById('students-modal');
+    const modalCourseSelect = document.getElementById('modal-course-select');
+    const modalStudentsList = document.getElementById('modal-students-list');
+    const newStudentInput = document.getElementById('new-student-name');
+
+    document.getElementById('btn-manage-students').addEventListener('click', () => {
+      // Fill courses dropdown in modal
+      modalCourseSelect.innerHTML = '';
+      COURSES.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name;
+        opt.selected = c.id === currentCourseId;
+        modalCourseSelect.appendChild(opt);
+      });
+      renderModalStudentList();
+      studentsModal.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-students-modal').addEventListener('click', () => {
+      studentsModal.classList.add('hidden');
+      renderAttendanceTable();
+    });
+
+    document.getElementById('btn-save-students-modal').addEventListener('click', () => {
+      studentsModal.classList.add('hidden');
+      renderAttendanceTable();
+    });
+
+    modalCourseSelect.addEventListener('change', () => {
+      renderModalStudentList();
+    });
+
+    function renderModalStudentList() {
+      const cId = modalCourseSelect.value;
+      const list = studentRosters[cId] || [];
+      document.getElementById('modal-students-count').textContent = list.length;
+      modalStudentsList.innerHTML = '';
+
+      if (list.length === 0) {
+        modalStudentsList.innerHTML = '<div class="text-xs text-slate-400 p-2 text-center">Nessuno studente in elenco.</div>';
+        return;
+      }
+
+      list.forEach(student => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-1.5 px-3 bg-white rounded-lg border border-slate-200 text-xs text-slate-800';
+        row.innerHTML = `
+          <span class="font-medium">${student.name}</span>
+          <button data-id="${student.id}" class="btn-del-student text-rose-500 hover:text-rose-700 p-1">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        `;
+        modalStudentsList.appendChild(row);
+      });
+
+      // Delete listener
+      modalStudentsList.querySelectorAll('.btn-del-student').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const sId = btn.dataset.id;
+          studentRosters[cId] = studentRosters[cId].filter(s => s.id !== sId);
+          renderModalStudentList();
+        });
+      });
+    }
+
+    document.getElementById('btn-add-student').addEventListener('click', () => {
+      const name = newStudentInput.value.trim();
+      if (!name) return;
+      const cId = modalCourseSelect.value;
+      const newId = 'st_' + Date.now();
+      studentRosters[cId].push({ id: newId, name: name });
+      newStudentInput.value = '';
+      renderModalStudentList();
+      showToast(`Aggiunto ${name}`, '👤');
+    });
+
+    newStudentInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('btn-add-student').click();
+      }
+    });
+
+    document.getElementById('btn-reset-default-students').addEventListener('click', () => {
+      // Re-seed with fresh sample names
+      studentRosters = {
+        en_a2: [{ id: 's1', name: 'Rossi Mario' }, { id: 's2', name: 'Bianchi Lucia' }],
+        en_b1: [{ id: 's5', name: 'Moretti Giulia' }, { id: 's6', name: 'Conti Matteo' }, { id: 's7', name: 'Marino Francesca' }],
+        en_b2: [{ id: 's10', name: 'De Luca Davide' }, { id: 's11', name: 'Barbieri Martina' }],
+        en_c1: [{ id: 's14', name: 'Rinaldi Lorenzo' }, { id: 's15', name: 'Caruso Beatrice' }],
+        es_gen: [{ id: 's17', name: 'Romano Camilla' }, { id: 's18', name: 'Costa Filippo' }]
+      };
+      renderModalStudentList();
+      showToast('Elenchi ripristinati con nomi dimostrativi', '🔄');
+    });
+
+    document.getElementById('btn-print-report').addEventListener('click', () => {
+      const dayData = getOrCreateDayData();
+      const course = COURSES.find(c => c.id === currentCourseId);
+      const students = studentRosters[currentCourseId] || [];
+
+      document.getElementById('print-date').textContent = formatItalianDate(currentDate);
+      document.getElementById('print-course').textContent = course.name;
+
+      const container = document.getElementById('print-modules-container');
+      container.innerHTML = '';
+
+      for (let m = 1; m <= 3; m++) {
+        const mod = dayData.modules[m];
+        const modBox = document.createElement('div');
+        modBox.className = 'border border-black p-4 rounded mb-4 break-inside-avoid';
+
+        let studentRows = students.map((s, i) => {
+          const rec = mod.attendance[s.id] || { status: 'assente', entryTime: '-', exitTime: '-' };
+          const statusMap = {
+            present: 'PRESENTE',
+            absent: 'ASSENTE',
+            late: 'RITARDO',
+            early_exit: 'USCITA ANT.'
+          };
+          return `
+            <tr class="border-b border-gray-300 text-xs">
+              <td class="py-1 px-2 text-center">${i + 1}</td>
+              <td class="py-1 px-2 font-bold">${s.name}</td>
+              <td class="py-1 px-2">${statusMap[rec.status] || rec.status}</td>
+              <td class="py-1 px-2">${rec.status === 'absent' ? '-' : rec.entryTime}</td>
+              <td class="py-1 px-2">${rec.status === 'absent' ? '-' : rec.exitTime}</td>
+              <td class="py-1 px-2 text-gray-600">${rec.notes || ''}</td>
+            </tr>
+          `;
+        }).join('');
+
+        modBox.innerHTML = `
+          <div class="flex justify-between items-center border-b border-black pb-2 mb-2">
+            <h2 class="text-base font-bold uppercase">MODULO ${m} (Orario: ${mod.startTime} - ${mod.endTime})</h2>
+            <span class="text-xs font-semibold">Docente: ${mod.teacher || '__________________'}</span>
+          </div>
+
+          <div class="text-xs mb-3">
+            <p class="font-bold">Argomento trattato:</p>
+            <p class="italic text-gray-800">${mod.topic || 'Nessun argomento registrato.'}</p>
+          </div>
+
+          <table class="w-full text-left text-xs mb-4 border border-black">
+            <thead>
+              <tr class="bg-gray-100 border-b border-black text-black font-bold">
+                <th class="py-1 px-2 w-8 text-center">#</th>
+                <th class="py-1 px-2">Studente</th>
+                <th class="py-1 px-2">Presenza</th>
+                <th class="py-1 px-2">Entrata</th>
+                <th class="py-1 px-2">Uscita</th>
+                <th class="py-1 px-2">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${studentRows || '<tr><td colspan="6" class="p-2 text-center">Nessuno studente iscritto</td></tr>'}
+            </tbody>
+          </table>
+
+          <div class="flex justify-end items-center pt-2">
+            <div class="text-right">
+              <span class="text-xs font-bold block mb-1">Firma del Docente (Modulo ${m}):</span>
+              ${mod.signatureDataUrl 
+                ? `<img src="${mod.signatureDataUrl}" class="h-12 inline-block border-b border-gray-400" alt="Firma">` 
+                : `<div class="h-12 w-48 border-b border-black border-dashed flex items-end justify-center text-[10px] text-gray-400 pb-1">Firma assente</div>`
+              }
+            </div>
+          </div>
+        `;
+
+        container.appendChild(modBox);
+      }
+
+      window.print();
+    });
+
+    function showToast(message, icon = '✓') {
+      const toast = document.getElementById('toast-box');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-message').textContent = message;
+
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    window.onload = function () {
+      renderCourseButtons();
+      resizeCanvas();
+      loadActiveView();
+      window.addEventListener('resize', resizeCanvas);
+    };
+  </script>
+</body>
+</html>
