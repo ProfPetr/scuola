@@ -69,6 +69,12 @@
           </svg>
           Collega a Numbers
         </button>
+        <button id="btn-open-email-modal" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-sky-300 text-sky-700 bg-sky-50 hover:bg-sky-100 text-xs font-semibold transition">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          Invia Report Email
+        </button>
         <button id="btn-print-report" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 text-xs font-semibold shadow-sm transition">
           <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -437,6 +443,89 @@
         <div class="flex justify-end pt-2 border-t border-slate-100">
           <button id="btn-save-students-modal" class="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition">
             Fatto
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Daily Email Report -->
+  <div id="email-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden transform transition-all flex flex-col max-h-[90vh]">
+      <div class="p-5 bg-gradient-to-r from-sky-600 to-indigo-700 text-white flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+          <div class="p-2 bg-white/20 rounded-lg">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-bold text-base">Invia Report Giornaliero via Email</h3>
+            <p class="text-xs text-sky-100">Genera e invia il resoconto completo dei moduli e delle presenze</p>
+          </div>
+        </div>
+        <button id="btn-close-email-modal" class="text-white/80 hover:text-white p-1">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4 overflow-y-auto">
+        <!-- Configuration options -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Destinatario / Segreteria Email:</label>
+            <input type="email" id="email-recipient" placeholder="es. segreteria@scuola.it" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition" value="segreteria@scuola.it">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Ambito del Report:</label>
+            <select id="email-scope" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition">
+              <option value="current_course">Corso Selezionato (3 Moduli di oggi)</option>
+              <option value="all_courses">Tutti i Corsi di oggi (Resoconto Generale)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Oggetto dell'email:</label>
+          <input type="text" id="email-subject" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition">
+        </div>
+
+        <!-- Preview of generated text -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-xs font-semibold text-slate-700">Anteprima Corpo Email (modificabile):</label>
+            <span class="text-[11px] text-slate-400">Generato in tempo reale dai moduli compilati</span>
+          </div>
+          <textarea id="email-body-preview" rows="9" class="w-full font-mono bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-700 leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-500 focus:bg-white transition"></textarea>
+        </div>
+
+        <div class="bg-sky-50 border border-sky-200 rounded-xl p-3 flex items-start space-x-2 text-xs text-sky-800">
+          <svg class="w-4 h-4 text-sky-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>Puoi inviare direttamente aprendo il tuo programma di posta (Apple Mail, Outlook, Thunderbird) oppure copiare il testo negli appunti per incollarlo in Gmail o WhatsApp.</span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <button id="btn-copy-email-text" class="px-4 py-2 rounded-xl border border-slate-300 hover:bg-white text-slate-700 text-xs font-semibold transition flex items-center">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
+          </svg>
+          Copia Testo per Email
+        </button>
+
+        <div class="flex items-center space-x-2">
+          <button id="btn-cancel-email" class="px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 text-xs font-semibold transition">
+            Chiudi
+          </button>
+          <button id="btn-send-mailto" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold shadow-md shadow-sky-200 transition flex items-center">
+            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+            </svg>
+            Invia con Client Email (Mailto)
           </button>
         </div>
       </div>
@@ -1150,6 +1239,142 @@
     document.getElementById('btn-download-csv-modal').addEventListener('click', executeDownloadModuleCSV);
     document.getElementById('btn-quick-download-csv').addEventListener('click', executeDownloadModuleCSV);
     document.getElementById('btn-download-all-csv').addEventListener('click', executeDownloadDayCSV);
+
+    // Email Report Modal Logic
+    const emailModal = document.getElementById('email-modal');
+    const emailRecipientInput = document.getElementById('email-recipient');
+    const emailScopeSelect = document.getElementById('email-scope');
+    const emailSubjectInput = document.getElementById('email-subject');
+    const emailBodyPreview = document.getElementById('email-body-preview');
+
+    function buildModuleSummaryText(course, moduleNum, modData) {
+      const students = studentRosters[course.id] || [];
+      const statusMap = {
+        present: 'Presente',
+        absent: 'Assente',
+        late: 'Ritardo',
+        early_exit: 'Uscita Anticipata'
+      };
+
+      let presentCount = 0;
+      let absentCount = 0;
+      let partialCount = 0;
+      let studentDetails = [];
+
+      students.forEach(s => {
+        const att = modData.attendance[s.id] || { status: 'absent', entryTime: '-', exitTime: '-' };
+        if (att.status === 'present') presentCount++;
+        else if (att.status === 'absent') absentCount++;
+        else partialCount++;
+
+        let line = `  * ${s.name}: ${statusMap[att.status] || att.status}`;
+        if (att.status !== 'absent') {
+          line += ` (${att.entryTime} - ${att.exitTime})`;
+        }
+        if (att.notes && att.notes.trim()) {
+          line += ` | Note: ${att.notes.trim()}`;
+        }
+        studentDetails.push(line);
+      });
+
+      const signatureStatus = modData.signatureDataUrl 
+        ? `Firmato digitalmente (ore ${modData.signedAt || 'registrata'})`
+        : 'NON ANCORA FIRMATO';
+
+      return [
+        `----------------------------------------------------`,
+        `MODULO ${moduleNum} | Orario: ${modData.startTime} - ${modData.endTime}`,
+        `Docente: ${modData.teacher || 'Non specificato'}`,
+        `Firma Docente: ${signatureStatus}`,
+        `Argomento Lezione: ${modData.topic.trim() ? modData.topic.trim() : 'Nessun argomento inserito.'}`,
+        `Presenze: ${presentCount} Presenti, ${absentCount} Assenti, ${partialCount} Parziali (Totale iscritti: ${students.length})`,
+        `Dettaglio Studenti:`,
+        studentDetails.length > 0 ? studentDetails.join('\n') : '  (Nessuno studente iscritto)',
+        ''
+      ].join('\n');
+    }
+
+    function generateDailyEmailReport() {
+      const isAllCourses = emailScopeSelect.value === 'all_courses';
+      const formattedDate = formatItalianDate(currentDate);
+
+      let subject = '';
+      let bodyLines = [];
+
+      if (!isAllCourses) {
+        const activeCourse = COURSES.find(c => c.id === currentCourseId);
+        const dayData = getOrCreateDayData(currentDate, currentCourseId);
+
+        subject = `[Report Lezioni] ${activeCourse.name} - ${formattedDate}`;
+        bodyLines.push(`REPORT GIORNALIERO LEZIONI E PRESENZE`);
+        bodyLines.push(`Data: ${formattedDate}`);
+        bodyLines.push(`Corso: ${activeCourse.name}`);
+        bodyLines.push(`====================================================\n`);
+
+        for (let m = 1; m <= 3; m++) {
+          bodyLines.push(buildModuleSummaryText(activeCourse, m, dayData.modules[m]));
+        }
+      } else {
+        subject = `[Report Giornaliero Completo] Tutti i Corsi - ${formattedDate}`;
+        bodyLines.push(`REPORT GIORNALIERO GENERALE - TUTTI I CORSI`);
+        bodyLines.push(`Data: ${formattedDate}`);
+        bodyLines.push(`====================================================\n`);
+
+        COURSES.forEach(course => {
+          const dayData = getOrCreateDayData(currentDate, course.id);
+          bodyLines.push(`\n====================================================`);
+          bodyLines.push(`CORSO: ${course.name.toUpperCase()}`);
+          bodyLines.push(`====================================================`);
+
+          for (let m = 1; m <= 3; m++) {
+            bodyLines.push(buildModuleSummaryText(course, m, dayData.modules[m]));
+          }
+        });
+      }
+
+      bodyLines.push(`\nGenerato automaticamente dal Registro Elettronico Corsi di Lingua il ${new Date().toLocaleDateString('it-IT')} alle ${new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}.`);
+
+      emailSubjectInput.value = subject;
+      emailBodyPreview.value = bodyLines.join('\n');
+    }
+
+    document.getElementById('btn-open-email-modal').addEventListener('click', () => {
+      generateDailyEmailReport();
+      emailModal.classList.remove('hidden');
+    });
+
+    document.getElementById('btn-close-email-modal').addEventListener('click', () => {
+      emailModal.classList.add('hidden');
+    });
+
+    document.getElementById('btn-cancel-email').addEventListener('click', () => {
+      emailModal.classList.add('hidden');
+    });
+
+    emailScopeSelect.addEventListener('change', () => {
+      generateDailyEmailReport();
+    });
+
+    document.getElementById('btn-copy-email-text').addEventListener('click', () => {
+      const textToCopy = `Oggetto: ${emailSubjectInput.value}\n\n${emailBodyPreview.value}`;
+      if (copyToClipboard(textToCopy)) {
+        showToast('Testo del report copiato negli appunti!', '📋');
+      } else {
+        showToast('Errore durante la copia', '⚠️');
+      }
+    });
+
+    document.getElementById('btn-send-mailto').addEventListener('click', () => {
+      const recipient = encodeURIComponent(emailRecipientInput.value.trim());
+      const subject = encodeURIComponent(emailSubjectInput.value.trim());
+      const body = encodeURIComponent(emailBodyPreview.value.trim());
+
+      const mailtoUrl = `mailto:${recipient}?subject=${subject}&body=${body}`;
+
+      // Trigger user default email client
+      window.location.href = mailtoUrl;
+      showToast('Apertura client di posta in corso...', '✉️');
+    });
 
     const studentsModal = document.getElementById('students-modal');
     const modalCourseSelect = document.getElementById('modal-course-select');
