@@ -1360,16 +1360,6 @@ function doPost(e) {
       window.open(url, '_blank');
     });
 
-        showToast('Dati inviati a Google Fogli con successo!', '📊');
-        const fb = document.getElementById('sheets-feedback');
-        fb.classList.remove('hidden');
-        setTimeout(() => fb.classList.add('hidden'), 4000);
-      } catch (err) {
-        console.error('Google Sheets send error:', err);
-        showToast('Errore durante l\'invio a Google Fogli', '⚠️');
-      }
-    }
-
     function generateTSVForGoogleSheets(moduleOnly = false) {
       const dayData = getOrCreateDayData();
       const course = COURSES.find(c => c.id === currentCourseId);
