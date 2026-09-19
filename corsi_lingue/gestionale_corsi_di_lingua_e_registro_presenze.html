@@ -376,16 +376,29 @@
           <p class="text-xs text-slate-600 leading-relaxed">
             Incolla qui l'URL dell'applicazione web di Google Apps Script distribuita nel tuo foglio Google. Una volta salvato, tutti i docenti potranno inviare le lezioni e le presenze con 1 click direttamente al foglio Google online.
           </p>
-          <div class="flex gap-2">
-            <input type="url" id="sheets-webhook-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
-            <button id="btn-save-webhook-url" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition">
-              Salva URL
-            </button>
+          <div class="space-y-2">
+            <div class="flex gap-2">
+              <input type="url" id="sheets-webhook-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono">
+              <button id="btn-save-webhook-url" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition whitespace-nowrap">
+                Salva URL
+              </button>
+            </div>
+            <!-- Alert URL warning -->
+            <div id="webhook-warning-dev" class="hidden p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-[11px] text-amber-800">
+              ⚠️ <strong>Attenzione:</strong> l'URL inserito termina con <code>/dev</code>. Per consentire la scrittura sul foglio, devi pubblicare un <strong>Nuovo Deployment</strong> e usare l'URL che termina con <code>/exec</code>.
+            </div>
           </div>
-          <div class="flex items-center justify-between pt-1">
-            <button id="btn-toggle-script-guide" class="text-xs text-emerald-700 hover:underline font-semibold flex items-center">
-              <span>Mostra lo script da incollare in Google Fogli &darr;</span>
-            </button>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <div class="flex items-center space-x-2">
+              <button id="btn-toggle-script-guide" class="text-xs text-emerald-700 hover:underline font-semibold flex items-center">
+                <span>Istruzioni e Script Google &darr;</span>
+              </button>
+              <span class="text-slate-300">&bull;</span>
+              <button id="btn-test-sheet-url" class="text-xs text-indigo-600 hover:underline font-semibold flex items-center" title="Apre l'URL nel browser per verificare che Google risponda 'OK'">
+                <span>Verifica URL nel browser ↗</span>
+              </button>
+            </div>
             <button id="btn-send-to-sheets" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center">
               <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
@@ -394,34 +407,79 @@
             </button>
           </div>
 
-          <!-- Apps Script Code Box (Toggled) -->
-          <div id="script-guide-box" class="hidden mt-3 pt-3 border-t border-slate-200 space-y-2">
+          <!-- Apps Script Code Box & Diagnostic Checklist (Toggled) -->
+          <div id="script-guide-box" class="hidden mt-3 pt-3 border-t border-slate-200 space-y-3">
+            <!-- Guida ai 3 motivi per cui il foglio rimane vuoto -->
+            <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1.5 text-xs text-amber-900">
+              <div class="font-bold flex items-center">
+                <svg class="w-4 h-4 mr-1.5 text-amber-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                Perché il foglio Google rimane vuoto? Verifica questi 3 passaggi:
+              </div>
+              <ul class="list-disc list-inside space-y-1 text-[11px] text-amber-800">
+                <li><strong>"Chi ha accesso" (Who has access)</strong>: quando fai <em>Distribuisci &rarr; Nuovo deployment</em>, devi selezionare <strong>"Chiunque" (Anyone)</strong>. Se lasci "Solo io", Google rifiuta le richieste e il foglio resta vuoto!</li>
+                <li><strong>"Esegui come" (Execute as)</strong>: deve essere impostato su <strong>"Me / Io (il tuo account)"</strong>.</li>
+                <li><strong>URL di produzione (/exec)</strong>: usa l'URL fornito dopo aver cliccato su <em>Esegui deployment</em> (termina con <code>/exec</code>, mai con <code>/dev</code>).</li>
+              </ul>
+            </div>
+
             <p class="text-[11px] text-slate-600">
-              Nel tuo Google Foglio, vai su <strong>Estensioni &rarr; Apps Script</strong>, cancella tutto e incolla questo codice:
+              Nel tuo foglio Google, apri <strong>Estensioni &rarr; Apps Script</strong>, cancella qualsiasi codice presente e incolla questo script aggiornato:
             </p>
             <div class="relative">
-              <pre class="bg-slate-900 text-slate-100 p-3 rounded-xl text-[10px] overflow-x-auto font-mono max-h-40 leading-relaxed" id="apps-script-code">function doPost(e) {
-  var data = JSON.parse(e.postData.contents);
-  var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var sheet = ss.getSheetByName(data.courseName) || ss.getActiveSheet();
-  
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(["Data", "Corso", "Modulo", "Orario", "Docente", "Argomento", "Firma", "Studente", "Presenza", "Entrata", "Uscita", "Note"]);
+              <pre class="bg-slate-900 text-slate-100 p-3.5 rounded-xl text-[10px] overflow-x-auto font-mono max-h-52 leading-relaxed" id="apps-script-code">// Gestione Webhook Gestionale Corsi di Lingua
+function doGet(e) {
+  return ContentService.createTextOutput("OK: Il Webhook di Google Fogli è attivo e pronto a ricevere dati!")
+    .setMimeType(ContentService.MimeType.TEXT);
+}
+
+function doPost(e) {
+  try {
+    var contents = e.postData ? e.postData.contents : "";
+    var data = JSON.parse(contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // Trova o crea la scheda specifica del corso (es. "Inglese B1")
+    var sheetName = data.courseName || "Registro";
+    var sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      if (ss.getSheets().length === 1 && ss.getSheets()[0].getLastRow() === 0) {
+        sheet = ss.getSheets()[0];
+        sheet.setName(sheetName);
+      } else {
+        sheet = ss.insertSheet(sheetName);
+      }
+    }
+    
+    // Se la scheda è vuota, crea l'intestazione
+    if (sheet.getLastRow() === 0) {
+      var headers = ["Data", "Corso", "Modulo", "Orario", "Docente", "Argomento", "Firma", "Studente", "Presenza", "Entrata", "Uscita", "Note"];
+      sheet.appendRow(headers);
+      sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#f1f5f9");
+      sheet.setFrozenRows(1);
+    }
+    
+    // Aggiungi tutte le righe di presenza degli studenti
+    if (data.rows && data.rows.length > 0) {
+      for (var i = 0; i < data.rows.length; i++) {
+        sheet.appendRow(data.rows[i]);
+      }
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({ status: "success", count: data.rows.length }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-  
-  data.rows.forEach(function(row) {
-    sheet.appendRow(row);
-  });
-  
-  return ContentService.createTextOutput(JSON.stringify({ status: "success", count: data.rows.length }))
-    .setMimeType(ContentService.MimeType.JSON);
 }</pre>
               <button id="btn-copy-apps-script" class="absolute top-2 right-2 px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white rounded text-[10px] font-semibold">
                 Copia Script
               </button>
             </div>
             <p class="text-[11px] text-slate-500">
-              Poi clicca su <strong>Esegui deployment &rarr; Nuovo deployment &rarr; Tipo: Applicazione web</strong> (Imposta <em>"Chiunque"</em> può accedere) e incolla l'URL generato qui sopra.
+              Dopo aver incollato, clicca in alto su <strong>Distribuisci &rarr; Nuovo deployment &rarr; Tipo: Applicazione web</strong> &rarr; Chi ha accesso: <strong>Chiunque</strong>. Copia l'URL dell'applicazione web e incollalo qui sopra.
             </p>
           </div>
         </div>
@@ -1232,11 +1290,20 @@
     }
 
     async function sendDataToGoogleSheetsWebhook() {
-      const webhookUrl = (document.getElementById('sheets-webhook-url').value || googleSheetsWebhookUrl || '').trim();
+      const inputEl = document.getElementById('sheets-webhook-url');
+      const webhookUrl = (inputEl.value || googleSheetsWebhookUrl || '').trim();
+      
       if (!webhookUrl) {
         showToast('Inserisci prima l\'URL di Google Apps Script', '⚠️');
         document.getElementById('sheets-modal').classList.remove('hidden');
-        document.getElementById('sheets-webhook-url').focus();
+        inputEl.focus();
+        return;
+      }
+
+      if (webhookUrl.includes('/dev')) {
+        document.getElementById('webhook-warning-dev').classList.remove('hidden');
+        showToast('Attenzione: usa l\'URL /exec (non /dev)!', '⚠️');
+        document.getElementById('sheets-modal').classList.remove('hidden');
         return;
       }
 
@@ -1244,14 +1311,54 @@
       showToast('Invio dati a Google Fogli in corso...', '⏳');
 
       try {
+        // Con text/plain il browser non effettua preflight CORS e Google Apps Script riceve il payload in e.postData.contents
         await fetch(webhookUrl, {
           method: 'POST',
           mode: 'no-cors',
+          cache: 'no-cache',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'text/plain;charset=utf-8'
           },
           body: JSON.stringify(payload)
         });
+
+        showToast('Dati inviati a Google Fogli!', '📊');
+        const fb = document.getElementById('sheets-feedback');
+        if (fb) {
+          fb.classList.remove('hidden');
+          fb.textContent = `Dati del corso "${COURSES.find(c => c.id === currentCourseId).name}" inviati con successo! Controlla il foglio Google.`;
+          setTimeout(() => fb.classList.add('hidden'), 5000);
+        }
+      } catch (err) {
+        console.error('Google Sheets send error:', err);
+        showToast('Errore di connessione a Google Fogli', '⚠️');
+      }
+    }
+
+    function checkWebhookUrlWarning(url) {
+      const warnEl = document.getElementById('webhook-warning-dev');
+      if (!warnEl) return;
+      if (url && url.includes('/dev')) {
+        warnEl.classList.remove('hidden');
+      } else {
+        warnEl.classList.add('hidden');
+      }
+    }
+
+    document.getElementById('sheets-webhook-url').addEventListener('input', (e) => {
+      checkWebhookUrlWarning(e.target.value.trim());
+    });
+
+    document.getElementById('btn-test-sheet-url').addEventListener('click', () => {
+      const inputEl = document.getElementById('sheets-webhook-url');
+      const url = (inputEl.value || googleSheetsWebhookUrl || '').trim();
+      if (!url) {
+        showToast('Inserisci prima l\'URL per testarlo', '⚠️');
+        inputEl.focus();
+        return;
+      }
+      window.open(url, '_blank');
+    });
 
         showToast('Dati inviati a Google Fogli con successo!', '📊');
         const fb = document.getElementById('sheets-feedback');
