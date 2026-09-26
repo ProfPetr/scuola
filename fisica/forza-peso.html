@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Forza-peso e il piano inclinato</title>
+  
+  <!-- Tailwind CSS per uno stile moderno e reattivo -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- KaTeX per la compilazione perfetta delle formule LaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Google Fonts: Inter e Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          },
+          colors: {
+            peso: '#2563eb',       /* Blu per P */
+            parallel: '#dc2626',   /* Rosso per P_parallelo */
+            perp: '#16a34a',       /* Verde per P_perpendicolare */
+            normale: '#9333ea',    /* Viola per Reazione Vincolare N */
+            attrito: '#ea580c'     /* Arancione per Forza d'Attrito */
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
+    .katex {
+      font-size: 1.08em;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+    /* Slider personalizzato */
+    input[type=range] {
+      accent-color: #3b82f6;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-30 px-4 lg:px-8 py-3.5 shadow-md">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Forza-peso e il piano inclinato
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 font-semibold">Fisica Meccanica</span>
+          </h1>
+          <p class="text-xs text-slate-400">Creato da Petr Ushakov con l'ausilio dell'IA</p>
+        </div>
+      </div>
+
+      <!-- Quick Preset Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-xs text-slate-400 hidden sm:inline">Angoli notevoli:</span>
+        <button onclick="setAnglePreset(30)" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">30°</button>
+        <button onclick="setAnglePreset(45)" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">45°</button>
+        <button onclick="setAnglePreset(60)" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">60°</button>
+        <button onclick="resetSimulation()" class="px-3 py-1 text-xs font-semibold rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 border border-blue-500/40 transition flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Reset
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+    <!-- LEFT COLUMN: Canvas visualizer & interactive simulation controls (7 cols) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      
+      <!-- Interactive Canvas Card -->
+      <div class="relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex flex-col">
+        <!-- Canvas top bar -->
+        <div class="px-4 py-2.5 bg-slate-850 border-b border-slate-800 flex items-center justify-between text-xs text-slate-300">
+          <div class="flex items-center gap-2">
+            <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="font-medium text-slate-200">Rappresentazione Vettoriale Interattiva</span>
+          </div>
+          <div class="text-slate-400 text-xs flex items-center gap-3">
+            <span id="scaleDisplay" class="font-mono text-slate-500 text-[11px] hidden md:inline"></span>
+            <span class="hidden sm:inline">Trascina il blocco o il vertice del piano per variare l'angolo</span>
+          </div>
+        </div>
+
+        <!-- Canvas Container -->
+        <div class="relative w-full aspect-[4/3] sm:aspect-[16/11] bg-slate-950 overflow-hidden cursor-crosshair">
+          <canvas id="simCanvas" class="w-full h-full block"></canvas>
+
+          <!-- Vector Legend Overlay -->
+          <div class="absolute top-3 left-3 bg-slate-900/90 backdrop-blur-md border border-slate-800/90 rounded-xl p-2.5 text-xs shadow-lg space-y-1.5 pointer-events-none select-none max-w-[210px]">
+            <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Legenda Vettori</div>
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-1 rounded bg-blue-500"></span>
+              <span class="text-blue-400 font-mono font-medium">$\vec{F}_P$ Forza-peso</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-1 rounded bg-red-500"></span>
+              <span class="text-red-400 font-mono font-medium">$\vec{F}_{\parallel}$ Componente $\parallel$</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3.5 h-1 rounded bg-emerald-500"></span>
+              <span class="text-emerald-400 font-mono font-medium">$\vec{F}_\perp$ Componente $\perp$</span>
+            </div>
+            <div id="legendNormale" class="flex items-center gap-2 opacity-35 transition-opacity">
+              <span class="w-3.5 h-1 rounded bg-purple-500"></span>
+              <span class="text-purple-400 font-mono font-medium">$\vec{N}$ Reazione normale</span>
+            </div>
+            <div id="legendAttrito" class="flex items-center gap-2 opacity-35 transition-opacity">
+              <span class="w-3.5 h-1 rounded bg-orange-500"></span>
+              <span class="text-orange-400 font-mono font-medium">$\vec{F}_a$ Attrito</span>
+            </div>
+          </div>
+
+          <!-- Dynamic Floating KaTeX Vector Badges on Canvas -->
+          <div id="badgeFp" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-blue-500/50 text-blue-400 font-mono text-xs shadow-md transition-opacity"></div>
+          <div id="badgeFpar" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-red-500/50 text-red-400 font-mono text-xs shadow-md transition-opacity"></div>
+          <div id="badgeFperp" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-emerald-500/50 text-emerald-400 font-mono text-xs shadow-md transition-opacity"></div>
+          <div id="badgeN" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-purple-500/50 text-purple-400 font-mono text-xs shadow-md transition-opacity"></div>
+          <div id="badgeFa" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-orange-500/50 text-orange-400 font-mono text-xs shadow-md transition-opacity"></div>
+          <div id="badgeThetaBase" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-blue-400/40 text-blue-400 font-mono text-xs shadow-md"></div>
+          <div id="badgeThetaForce" class="absolute pointer-events-none select-none z-10 px-1.5 py-0.5 rounded bg-slate-900/90 border border-blue-400/40 text-blue-400 font-mono text-xs shadow-md"></div>
+
+          <!-- Motion Animation Control Overlay -->
+          <div class="absolute top-3 right-3 flex items-center gap-2">
+            <button id="btnPlayPause" onclick="togglePlayPause()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/30 flex items-center gap-1.5 transition">
+              <span id="playIcon">▶</span>
+              <span id="playText">Test Moto</span>
+            </button>
+            <button onclick="resetBlockPosition()" title="Riporta il blocco a monte" class="p-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs backdrop-blur transition">
+              ↺ Posizione
+            </button>
+          </div>
+        </div>
+
+        <!-- Visibility toggles row below canvas with switch controls (N and Fa OFF by default) -->
+        <div class="p-3 bg-slate-900 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div class="font-medium text-slate-300">Elementi vettoriali:</div>
+          <div class="flex flex-wrap items-center gap-4 text-slate-300">
+            <!-- Interruttore Reazione Normale N (Spento di default) -->
+            <label class="inline-flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" id="chkNormal" onchange="onToggleNormal()" class="sr-only peer">
+              <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-600 relative"></div>
+              <span class="text-slate-300 group-hover:text-purple-400 transition-colors font-medium">Reazione $\vec{N}$</span>
+            </label>
+
+            <!-- Interruttore Forza d'Attrito Fa (Spento di default) -->
+            <label class="inline-flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" id="chkFriction" onchange="onToggleFriction()" class="sr-only peer">
+              <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-orange-600 relative"></div>
+              <span class="text-slate-300 group-hover:text-orange-400 transition-colors font-medium">Attrito $\vec{F}_a$</span>
+            </label>
+
+            <!-- Rettangolo Proiezioni -->
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="chkProjections" checked onchange="redraw()" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+              <span class="text-slate-400 hover:text-slate-200">Proiezioni tratteggiate</span>
+            </label>
+
+            <!-- Archi Angolo Theta -->
+            <label class="inline-flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="chkAngles" checked onchange="redraw()" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+              <span class="text-slate-400 hover:text-slate-200">Archi $\theta$</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Dynamic Formulas Cards (Telemetry) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <!-- Peso totale -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Forza Peso</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+          </div>
+          <div class="my-1.5">
+            <span class="text-xs text-slate-400">Formula:</span>
+            <div class="text-sm font-semibold text-blue-400" id="mathPFormula">$P = m \cdot g$</div>
+          </div>
+          <div class="pt-1.5 border-t border-slate-800 text-base font-bold text-white font-mono" id="valP">
+            -- N
+          </div>
+        </div>
+
+        <!-- Parallela -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Componente $\parallel$</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+          </div>
+          <div class="my-1.5">
+            <span class="text-xs text-slate-400">Formula:</span>
+            <div class="text-sm font-semibold text-red-400" id="mathPparFormula">$P_\parallel = P \sin\theta$</div>
+          </div>
+          <div class="pt-1.5 border-t border-slate-800 text-base font-bold text-white font-mono" id="valPpar">
+            -- N
+          </div>
+        </div>
+
+        <!-- Perpendicolare -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Componente $\perp$</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+          </div>
+          <div class="my-1.5">
+            <span class="text-xs text-slate-400">Formula:</span>
+            <div class="text-sm font-semibold text-emerald-400" id="mathPperpFormula">$P_\perp = P \cos\theta$</div>
+          </div>
+          <div class="pt-1.5 border-t border-slate-800 text-base font-bold text-white font-mono" id="valPperp">
+            -- N
+          </div>
+        </div>
+
+        <!-- Accelerazione / Dinamica -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 shadow-md flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-400">
+            <span>Accelerazione $a$</span>
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+          </div>
+          <div class="my-1.5">
+            <span class="text-xs text-slate-400">Lungo il piano:</span>
+            <div class="text-sm font-semibold text-amber-400" id="mathAccFormula">$a = g(\sin\theta - \mu\cos\theta)$</div>
+          </div>
+          <div class="pt-1.5 border-t border-slate-800 text-base font-bold text-white font-mono" id="valAcc">
+            -- m/s²
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: Physical Controls, Explanations & Didactic Tabs (5 cols) -->
+    <section class="lg:col-span-5 flex flex-col gap-4">
+      
+      <!-- Interactive Sliders Control Card -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <h2 class="text-sm font-bold text-white flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+            Parametri Fisici del Sistema
+          </span>
+          <span class="text-xs text-slate-400 font-normal">Modifica in tempo reale</span>
+        </h2>
+
+        <!-- Control: Inclinazione Theta -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <label for="sliderAngle" class="font-medium text-slate-300">
+              Angolo d'inclinazione: <span class="font-mono text-blue-400 font-semibold text-sm" id="lblAngleMath">$\theta = 30^\circ$</span>
+            </label>
+            <span class="text-slate-400 font-mono text-xs">(rad: <span id="lblAngleRad">0.52</span>)</span>
+          </div>
+          <input type="range" id="sliderAngle" min="0" max="80" step="0.5" value="30" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0° (Orizzontale)</span>
+            <span>45°</span>
+            <span>80° (Quasi verticale)</span>
+          </div>
+        </div>
+
+        <!-- Control: Massa Corpo -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <label for="sliderMass" class="font-medium text-slate-300">
+              Massa del corpo: <span class="font-mono text-emerald-400 font-semibold text-sm" id="lblMassMath">$m = 10\text{ kg}$</span>
+            </label>
+          </div>
+          <input type="range" id="sliderMass" min="1" max="50" step="1" value="10" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>1 kg</span>
+            <span>25 kg</span>
+            <span>50 kg</span>
+          </div>
+        </div>
+
+        <!-- Control: Attrito Dinamico/Statico -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-xs">
+            <label for="sliderMu" class="font-medium text-slate-300">
+              Coeff. d'attrito: <span class="font-mono text-orange-400 font-semibold text-sm" id="lblMuMath">$\mu = 0.20$</span>
+            </label>
+            <span id="frictionStatus" class="text-[11px] px-2 py-0.5 rounded font-medium bg-red-950 text-red-400 border border-red-800/40">In moto</span>
+          </div>
+          <input type="range" id="sliderMu" min="0" max="1" step="0.02" value="0.20" class="w-full h-2 bg-slate-800 rounded-lg cursor-pointer">
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0.00 (Liscio)</span>
+            <span>0.50</span>
+            <span>1.00 (Molto scabro)</span>
+          </div>
+        </div>
+
+        <!-- Environment Gravity Presets -->
+        <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+          <span class="text-slate-400 font-medium">Accelerazione $g$:</span>
+          <select id="selectGravity" onchange="changeGravityPreset()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-blue-500 font-mono">
+            <option value="9.81">Terra (9.81 m/s²)</option>
+            <option value="1.62">Luna (1.62 m/s²)</option>
+            <option value="3.72">Marte (3.72 m/s²)</option>
+            <option value="24.79">Giove (24.79 m/s²)</option>
+            <option value="9.80665">Personalizzato...</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Didactic Explanation Notebook (Tabs) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-xl min-h-[360px]">
+        <!-- Tab Navigation Buttons -->
+        <div class="flex border-b border-slate-800 bg-slate-850 text-xs font-semibold">
+          <button id="tabBtn1" onclick="switchTab(1)" class="flex-1 py-3 px-3 text-center border-b-2 border-blue-500 text-blue-400 bg-slate-900/60 transition">
+            1. Dimostrazione
+          </button>
+          <button id="tabBtn2" onclick="switchTab(2)" class="flex-1 py-3 px-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+            2. Formule & Trig
+          </button>
+          <button id="tabBtn3" onclick="switchTab(3)" class="flex-1 py-3 px-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+            3. Bilancio Forze
+          </button>
+        </div>
+
+        <!-- Tab 1: Geometric Proof -->
+        <div id="tabContent1" class="p-4 sm:p-5 text-sm text-slate-300 space-y-3.5 overflow-y-auto custom-scrollbar flex-1">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-xs">📐</span>
+            Perché l'angolo $\theta$ è lo stesso?
+          </h3>
+          <p class="leading-relaxed text-xs sm:text-sm text-slate-300">
+            Una delle domande più frequenti in fisica è: <em>"Perché l'angolo formato tra la forza-peso $\vec{P}$ e la componente perpendicolare $\vec{P}_\perp$ è esattamente pari all'inclinazione $\theta$ del piano?"</em>
+          </p>
+
+          <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-2 text-xs">
+            <div class="font-semibold text-blue-300">Teorema degli angoli con lati mutuamente perpendicolari:</div>
+            <ul class="list-disc pl-4 space-y-1.5 text-slate-300">
+              <li>Il lato orizzontale del piano è <strong>perpendicolare</strong> alla direzione verticale della forza-peso $\vec{P}$.</li>
+              <li>Il lato inclinato del piano (l'ipotenusa) è <strong>perpendicolare</strong> per definizione alla retta d'azione di $\vec{P}_\perp$.</li>
+            </ul>
+            <p class="text-slate-400 italic pt-1 border-t border-slate-800">
+              Due angoli acuti che hanno i lati rispettivamente perpendicolari sono <strong>congruenti</strong>. Dunque, l'angolo nel triangolo delle forze è identico a $\theta$.
+            </p>
+          </div>
+
+          <div class="p-3 bg-blue-950/20 rounded-xl border border-blue-900/40 text-xs space-y-1.5">
+            <div class="font-semibold text-blue-400">Verifica degli angoli complementari:</div>
+            <p class="text-slate-300">
+              Nel triangolo rettangolo del piano, l'angolo al vertice superiore vale $90^\circ - \theta$. Poiché $\vec{P}_\perp$ è perpendicolare alla superficie, l'angolo tra $\vec{P}$ e $\vec{P}_\parallel$ vale $90^\circ - \theta$, rendendo quindi l'angolo tra $\vec{P}$ e $\vec{P}_\perp$ esattamente:
+            </p>
+            <div class="text-center py-1 font-mono text-white text-sm">
+              $90^\circ - (90^\circ - \theta) = \theta$
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Trigonometry and Formulas -->
+        <div id="tabContent2" class="p-4 sm:p-5 text-sm text-slate-300 space-y-3.5 overflow-y-auto custom-scrollbar flex-1 hidden">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">∫</span>
+            Formule e Trigonometria
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Considerando il triangolo rettangolo formato dal vettore peso $\vec{P}$ (ipotenusa) e dalle sue due componenti ortogonali:
+          </p>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-950 rounded-xl border border-red-900/30">
+              <span class="font-bold text-red-400">Componente Parallela ($P_\parallel$):</span>
+              <p class="text-slate-300 mt-1">
+                È il cateto <strong>opposto</strong> all'angolo $\theta$, responsabile dello scivolamento:
+              </p>
+              <div class="my-1.5 p-2 bg-slate-900 rounded font-mono text-center text-red-300 text-sm">
+                $P_\parallel = P \cdot \sin\theta = m \cdot g \cdot \sin\theta$
+              </div>
+              <p class="text-slate-400 text-[11px]">Se $\theta = 0^\circ \implies P_\parallel = 0$. Se $\theta = 90^\circ \implies P_\parallel = P$.</p>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-xl border border-emerald-900/30">
+              <span class="font-bold text-emerald-400">Componente Perpendicolare ($P_\perp$):</span>
+              <p class="text-slate-300 mt-1">
+                È il cateto <strong>adiacente</strong> all'angolo $\theta$, comprime il blocco sul piano:
+              </p>
+              <div class="my-1.5 p-2 bg-slate-900 rounded font-mono text-center text-emerald-300 text-sm">
+                $P_\perp = P \cdot \cos\theta = m \cdot g \cdot \cos\theta$
+              </div>
+              <p class="text-slate-400 text-[11px]">Se $\theta = 0^\circ \implies P_\perp = P$. Se $\theta = 90^\circ \implies P_\perp = 0$.</p>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800">
+              <span class="font-bold text-blue-400">Verifica con il Teorema di Pitagora:</span>
+              <div class="my-1 p-2 bg-slate-900 rounded font-mono text-center text-slate-200">
+                $P = \sqrt{P_\parallel^2 + P_\perp^2} = \sqrt{(mg\sin\theta)^2 + (mg\cos\theta)^2} = mg\sqrt{\sin^2\theta + \cos^2\theta} = mg$
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Dynamic Equations and Friction -->
+        <div id="tabContent3" class="p-4 sm:p-5 text-sm text-slate-300 space-y-3.5 overflow-y-auto custom-scrollbar flex-1 hidden">
+          <h3 class="font-bold text-white text-base flex items-center gap-2">
+            <span class="w-6 h-6 rounded-lg bg-orange-500/20 text-orange-400 flex items-center justify-center text-xs">⚖️</span>
+            Dinamica e Condizione di Equilibrio
+          </h3>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Applicando il secondo principio della dinamica lungo i due assi orientati:
+          </p>
+
+          <div class="space-y-3 text-xs">
+            <div class="p-3 bg-slate-950 rounded-xl border border-purple-900/30">
+              <span class="font-bold text-purple-400">Asse perpendicolare al piano ($\perp$):</span>
+              <p class="text-slate-300 mt-1">Non c'è moto lungo questo asse ($\sum F_\perp = 0$):</p>
+              <div class="my-1 p-2 bg-slate-900 rounded font-mono text-center text-purple-300">
+                $N - P_\perp = 0 \implies N = P_\perp = m \cdot g \cdot \cos\theta$
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-xl border border-orange-900/30">
+              <span class="font-bold text-orange-400">Forza d'Attrito Massimo ($F_{a,\max}$):</span>
+              <p class="text-slate-300 mt-1">L'attrito si oppone sempre allo scivolamento a valle:</p>
+              <div class="my-1 p-2 bg-slate-900 rounded font-mono text-center text-orange-300">
+                $F_{a,\max} = \mu \cdot N = \mu \cdot m \cdot g \cdot \cos\theta$
+              </div>
+            </div>
+
+            <div class="p-3 bg-slate-950 rounded-xl border border-amber-900/30">
+              <span class="font-bold text-amber-400">Condizione limite di scivolamento:</span>
+              <p class="text-slate-300 mt-1">Il corpo inizia a scivolare quando $P_\parallel > F_{a,\max}$:</p>
+              <div class="my-1 p-2 bg-slate-900 rounded font-mono text-center text-amber-300">
+                $mg\sin\theta > \mu mg\cos\theta \iff \tan\theta > \mu$
+              </div>
+              <p class="text-slate-400 text-[11px]">
+                L'angolo critico $\theta_c = \arctan(\mu)$ è del tutto <strong>indipendente dalla massa</strong> del corpo!
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // Stato fisico e interattivo della simulazione
+    const state = {
+      thetaDeg: 30.0,            // Angolo in gradi
+      mass: 10.0,                // Massa in kg
+      gravity: 9.81,             // Accelerazione g in m/s^2
+      mu: 0.20,                  // Coefficiente attrito
+      blockRelPos: 0.70,         // Posizione relativa lungo la rampa (0 = base, 1 = cima)
+      velocity: 0.0,             // Velocità lungo la rampa (m/s)
+      isPlaying: false,          // Test animazione attivo
+      dragTarget: null,          // 'block' o 'angle'
+      angleVertex: { x: 0, y: 0, radius: 16 },
+      
+      // Calcoli fisici correnti
+      weight: 0,
+      pParallel: 0,
+      pPerp: 0,
+      normal: 0,
+      friction: 0,
+      acceleration: 0,
+      isStatic: true
+    };
+
+    // Riferimenti Canvas
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function onToggleNormal() {
+      const isChecked = document.getElementById('chkNormal').checked;
+      const leg = document.getElementById('legendNormale');
+      if (isChecked) {
+        leg.classList.remove('opacity-35');
+      } else {
+        leg.classList.add('opacity-35');
+      }
+      redraw();
+    }
+
+    function onToggleFriction() {
+      const isChecked = document.getElementById('chkFriction').checked;
+      const leg = document.getElementById('legendAttrito');
+      if (isChecked) {
+        leg.classList.remove('opacity-35');
+      } else {
+        leg.classList.add('opacity-35');
+      }
+      redraw();
+    }
+
+    /* Helper per disegnare frecce con punte pulite */
+    function drawArrow(ctx, fromX, fromY, toX, toY, color, lineWidth = 2.5, headLen = 12) {
+      const dx = toX - fromX;
+      const dy = toY - fromY;
+      const angle = Math.atan2(dy, dx);
+      const length = Math.hypot(dx, dy);
+
+      if (length < 2) return;
+
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Linea principale
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+
+      // Testa della freccia
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headLen * Math.cos(angle - Math.PI / 6), toY - headLen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - (headLen * 0.6) * Math.cos(angle), toY - (headLen * 0.6) * Math.sin(angle));
+      ctx.lineTo(toX - headLen * Math.cos(angle + Math.PI / 6), toY - headLen * Math.sin(angle + Math.PI / 6));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function redraw() {
+      const rect = canvas.getBoundingClientRect();
+      const W = rect.width;
+      const H = rect.height;
+      
+      ctx.clearRect(0, 0, W, H);
+
+      // Parametri geometrici della rampa
+      const marginX = W * 0.08;
+      const marginY = H * 0.12;
+      const baseLen = W * 0.82;
+      
+      const pBaseLeft = { x: marginX, y: H - marginY };
+      const pBaseRight = { x: marginX + baseLen, y: H - marginY };
+      
+      const thetaRad = state.thetaDeg * (Math.PI / 180);
+      const rampHeight = Math.min(baseLen * Math.tan(thetaRad), H * 0.68);
+      const effectiveBaseLen = rampHeight / Math.tan(Math.max(thetaRad, 0.001));
+      
+      const pTop = { 
+        x: pBaseLeft.x + (state.thetaDeg < 0.5 ? baseLen : effectiveBaseLen), 
+        y: (H - marginY) - rampHeight 
+      };
+
+      // 1. Sfondo griglia tecnica soft
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1;
+      const gridStep = 40;
+      for (let x = 0; x < W; x += gridStep) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = 0; y < H; y += gridStep) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+
+      // 2. Disegno del Piano Inclinato (Cuneo)
+      ctx.save();
+      const rampGrad = ctx.createLinearGradient(pBaseLeft.x, pTop.y, pBaseLeft.x, pBaseLeft.y);
+      rampGrad.addColorStop(0, 'rgba(51, 65, 85, 0.45)');
+      rampGrad.addColorStop(1, 'rgba(30, 41, 59, 0.7)');
+
+      ctx.fillStyle = rampGrad;
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2.5;
+
+      ctx.beginPath();
+      ctx.moveTo(pBaseLeft.x, pBaseLeft.y);
+      ctx.lineTo(pTop.x, pTop.y);
+      ctx.lineTo(pTop.x, pBaseLeft.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Pavimento orizzontale
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(marginX * 0.4, pBaseLeft.y);
+      ctx.lineTo(W - marginX * 0.4, pBaseLeft.y);
+      ctx.stroke();
+
+      // Tratteggio sotto il pavimento
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      for (let x = marginX * 0.4; x < W - marginX * 0.4; x += 12) {
+        ctx.beginPath();
+        ctx.moveTo(x, pBaseLeft.y);
+        ctx.lineTo(x - 8, pBaseLeft.y + 8);
+        ctx.stroke();
+      }
+
+      // Maniglia interattiva sul vertice in alto (per modificare l'angolo dinamicamente trascinando)
+      state.angleVertex = { x: pTop.x, y: pTop.y, radius: 14 };
+      ctx.fillStyle = state.dragTarget === 'angle' ? '#60a5fa' : '#38bdf8';
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(pTop.x, pTop.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Piccolo anello guida attorno al vertice
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.arc(pTop.x, pTop.y, 13, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      // 3. Indicatore dell'Angolo Theta sul piano (SOLO SIMBOLO, NESSUN VALORE NUMERICO)
+      const chkAngles = document.getElementById('chkAngles').checked;
+      if (chkAngles && state.thetaDeg > 1.5) {
+        const arcRadius = Math.min(50, effectiveBaseLen * 0.35);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(pBaseLeft.x, pBaseLeft.y, arcRadius, 0, -thetaRad, true);
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.2)';
+        ctx.beginPath();
+        ctx.moveTo(pBaseLeft.x, pBaseLeft.y);
+        ctx.arc(pBaseLeft.x, pBaseLeft.y, arcRadius, 0, -thetaRad, true);
+        ctx.closePath();
+        ctx.fill();
+
+        // Solo simbolo Theta (nessun valore numerico sul disegno)
+        const textAngle = -thetaRad / 2;
+        const textX = pBaseLeft.x + (arcRadius + 14) * Math.cos(textAngle);
+        const textY = pBaseLeft.y + (arcRadius + 14) * Math.sin(textAngle);
+        updateBadgePosition('badgeThetaBase', textX - 6, textY - 8, true);
+        ctx.restore();
+      } else {
+        updateBadgePosition('badgeThetaBase', 0, 0, false);
+      }
+
+      // Calcolo coordinate del blocco sul piano inclinato
+      const clampedRelPos = Math.max(0.12, Math.min(0.88, state.blockRelPos));
+      const blockCenterOnRamp = {
+        x: pBaseLeft.x + (pTop.x - pBaseLeft.x) * clampedRelPos,
+        y: pBaseLeft.y + (pTop.y - pBaseLeft.y) * clampedRelPos
+      };
+
+      const blockW = Math.max(38, Math.min(65, 34 + state.mass * 0.7));
+      const blockH = blockW * 0.65;
+
+      // Vettore normale e parallelo rispetto al piano (in coordinate schermo)
+      const uParX = -Math.cos(thetaRad);
+      const uParY = Math.sin(thetaRad);
+
+      const uPerpX = Math.sin(thetaRad);
+      const uPerpY = Math.cos(thetaRad);
+
+      // Centro di massa del blocco
+      const cmX = blockCenterOnRamp.x - uPerpX * (blockH / 2);
+      const cmY = blockCenterOnRamp.y - uPerpY * (blockH / 2);
+
+      // Salva coordinate per drag detection
+      state.blockCenter = { x: cmX, y: cmY, radius: blockW };
+
+      // Disegno del Blocco (senza testo numerico)
+      ctx.save();
+      ctx.translate(blockCenterOnRamp.x, blockCenterOnRamp.y);
+      ctx.rotate(-thetaRad);
+
+      // Ombra del blocco sul piano
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.4)';
+      ctx.fillRect(-blockW / 2 + 3, -blockH - 1, blockW, blockH);
+
+      // Corpo del blocco
+      const blockGrad = ctx.createLinearGradient(-blockW / 2, -blockH, blockW / 2, 0);
+      blockGrad.addColorStop(0, '#38bdf8');
+      blockGrad.addColorStop(1, '#0284c7');
+      ctx.fillStyle = blockGrad;
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 2;
+
+      // Rettangolo smussato
+      const r = 5;
+      ctx.beginPath();
+      ctx.roundRect(-blockW / 2, -blockH, blockW, blockH, [r, r, 0, 0]);
+      ctx.fill();
+      ctx.stroke();
+
+      // Grip visivo al centro del blocco (senza numeri)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.beginPath();
+      ctx.roundRect(-8, -blockH / 2 - 3, 16, 6, 2);
+      ctx.fill();
+
+      ctx.restore();
+
+      // SCALA VETTORI: Adatta graficamente in modo che i vettori restino chiari
+      const maxVectorPx = Math.min(W, H) * 0.38;
+      const maxForceRef = 50 * 9.81; // 50kg su Terra ≈ 490N
+      const vectorScale = (maxVectorPx / maxForceRef) * 2.1;
+      const scaleEl = document.getElementById('scaleDisplay');
+      if (scaleEl) {
+        scaleEl.innerText = `Scala: 1 N ≈ ${(vectorScale).toFixed(2)} px`;
+      }
+
+      // Moduli grafici in pixel
+      const lenP = state.weight * vectorScale;
+      const lenPpar = state.pParallel * vectorScale;
+      const lenPperp = state.pPerp * vectorScale;
+      const lenNorm = state.normal * vectorScale;
+      const lenFric = state.friction * vectorScale;
+
+      // 4. ASSI CARTESIANI ORTOGONALI PASSANTI PER IL BARICENTRO (DIETRO I VETTORI)
+      const chkAxes = document.getElementById('chkAxes')?.checked ?? true;
+      if (chkAxes) {
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)'; // Tratteggio sottile e discreto
+
+        const axisLength = Math.max(120, maxVectorPx * 1.15);
+
+        // Asse parallelo al piano inclinato (passante per cmX, cmY)
+        ctx.beginPath();
+        ctx.moveTo(cmX - uParX * axisLength, cmY - uParY * axisLength);
+        ctx.lineTo(cmX + uParX * axisLength, cmY + uParY * axisLength);
+        ctx.stroke();
+
+        // Asse perpendicolare al piano inclinato (passante per cmX, cmY)
+        ctx.beginPath();
+        ctx.moveTo(cmX - uPerpX * axisLength, cmY - uPerpY * axisLength);
+        ctx.lineTo(cmX + uPerpX * axisLength, cmY + uPerpY * axisLength);
+        ctx.stroke();
+
+        // Etichette sottili dei due assi ortogonali
+        ctx.fillStyle = 'rgba(148, 163, 184, 0.7)';
+        ctx.font = '500 11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('asse ∥', cmX + uParX * (axisLength + 22), cmY + uParY * (axisLength + 22));
+        ctx.fillText('asse ⊥', cmX - uPerpX * (axisLength + 20), cmY - uPerpY * (axisLength + 20));
+
+        ctx.restore();
+      }
+
+      // Punti terminali dei vettori a partire dal Centro di Massa (cmX, cmY)
+      // 1. Forza Peso F_P (Verticale verso il basso)
+      const tipP = {
+        x: cmX,
+        y: cmY + lenP
+      };
+
+      // 2. Componente Perpendicolare F_perp (Normale verso l'interno della rampa)
+      const tipPperp = {
+        x: cmX + uPerpX * lenPperp,
+        y: cmY + uPerpY * lenPperp
+      };
+
+      // 3. Componente Parallela F_parallel (Lungo la rampa verso valle)
+      const tipPpar = {
+        x: cmX + uParX * lenPpar,
+        y: cmY + uParY * lenPpar
+      };
+
+      // 4. Reazione Normale N (Normale verso l'esterno, opposta a F_perp)
+      const tipNorm = {
+        x: cmX - uPerpX * lenNorm,
+        y: cmY - uPerpY * lenNorm
+      };
+
+      // 5. Forza d'Attrito F_a (Lungo la rampa verso monte, opposta a F_parallel)
+      const tipFric = {
+        x: cmX - uParX * lenFric,
+        y: cmY - uParY * lenFric
+      };
+
+      const chkProjections = document.getElementById('chkProjections').checked;
+      const chkNormal = document.getElementById('chkNormal').checked;
+      const chkFriction = document.getElementById('chkFriction').checked;
+
+      // Disegno Linee Tratteggiate di Proiezione (Rettangolo delle Forze)
+      if (chkProjections && state.thetaDeg > 1 && state.thetaDeg < 88) {
+        ctx.save();
+        ctx.setLineDash([4, 4]);
+        ctx.lineWidth = 1.5;
+
+        // Da F_perp a F_P
+        ctx.strokeStyle = '#f87171'; // Rosso soft
+        ctx.beginPath();
+        ctx.moveTo(tipPperp.x, tipPperp.y);
+        ctx.lineTo(tipP.x, tipP.y);
+        ctx.stroke();
+
+        // Da F_parallel a F_P
+        ctx.strokeStyle = '#4ade80'; // Verde soft
+        ctx.beginPath();
+        ctx.moveTo(tipPpar.x, tipPpar.y);
+        ctx.lineTo(tipP.x, tipP.y);
+        ctx.stroke();
+
+        // Segno di angolo retto tra F_perp e F_parallel
+        const sqSize = 10;
+        const sqX = cmX + uPerpX * sqSize + uParX * sqSize;
+        const sqY = cmY + uPerpY * sqSize + uParY * sqSize;
+        ctx.strokeStyle = '#94a3b8';
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(cmX + uPerpX * sqSize, cmY + uPerpY * sqSize);
+        ctx.lineTo(sqX, sqY);
+        ctx.lineTo(cmX + uParX * sqSize, cmY + uParY * sqSize);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Arco dell'angolo Theta tra il vettore F_P e F_perp nel triangolo delle forze
+      if (chkAngles && state.thetaDeg > 3) {
+        ctx.save();
+        const forceArcR = Math.min(38, lenPperp * 0.45);
+        const anglePerp = Math.atan2(uPerpY, uPerpX);
+        const angleP = Math.PI / 2; // Verticale in giù
+
+        ctx.beginPath();
+        ctx.arc(cmX, cmY, forceArcR, anglePerp, angleP, false);
+        ctx.strokeStyle = '#60a5fa';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(cmX, cmY);
+        ctx.arc(cmX, cmY, forceArcR, anglePerp, angleP, false);
+        ctx.closePath();
+        ctx.fill();
+
+        // Posizionamento del badge KaTeX per theta delle forze
+        const midA = (anglePerp + angleP) / 2;
+        const thetaForceX = cmX + (forceArcR + 14) * Math.cos(midA);
+        const thetaForceY = cmY + (forceArcR + 14) * Math.sin(midA);
+        updateBadgePosition('badgeThetaForce', thetaForceX - 5, thetaForceY - 8, true);
+        ctx.restore();
+      } else {
+        updateBadgePosition('badgeThetaForce', 0, 0, false);
+      }
+
+      // 1. VETTORE F_P (FORZA-PESO TOTALE) - Blu
+      drawArrow(ctx, cmX, cmY, tipP.x, tipP.y, '#3b82f6', 3.2, 13);
+      updateBadgePosition('badgeFp', tipP.x + 8, tipP.y - 10, true);
+
+      // 2. VETTORE F_PERP (COMPONENTE PERPENDICOLARE) - Verde
+      if (lenPperp > 3) {
+        drawArrow(ctx, cmX, cmY, tipPperp.x, tipPperp.y, '#10b981', 3.0, 12);
+        updateBadgePosition('badgeFperp', tipPperp.x + uPerpX * 12 + 6, tipPperp.y + uPerpY * 12 - 10, true);
+      } else {
+        updateBadgePosition('badgeFperp', 0, 0, false);
+      }
+
+      // 3. VETTORE F_PARALLEL (COMPONENTE PARALLELA) - Rosso
+      if (lenPpar > 3) {
+        drawArrow(ctx, cmX, cmY, tipPpar.x, tipPpar.y, '#ef4444', 3.0, 12);
+        updateBadgePosition('badgeFpar', tipPpar.x + uParX * 14 - 18, tipPpar.y + uParY * 14 + 4, true);
+      } else {
+        updateBadgePosition('badgeFpar', 0, 0, false);
+      }
+
+      // 4. VETTORE N (REAZIONE NORMALE) - Spento di default
+      if (chkNormal && lenNorm > 3) {
+        drawArrow(ctx, cmX, cmY, tipNorm.x, tipNorm.y, '#a855f7', 2.5, 11);
+        updateBadgePosition('badgeN', tipNorm.x - uPerpX * 14 - 18, tipNorm.y - uPerpY * 14 - 14, true);
+      } else {
+        updateBadgePosition('badgeN', 0, 0, false);
+      }
+
+      // 5. VETTORE F_A (ATTRITO) - Spento di default
+      if (chkFriction && lenFric > 2 && state.mu > 0.01) {
+        drawArrow(ctx, cmX, cmY, tipFric.x, tipFric.y, '#f97316', 2.5, 11);
+        updateBadgePosition('badgeFa', tipFric.x - uParX * 14 + 6, tipFric.y - uParY * 14 - 14, true);
+      } else {
+        updateBadgePosition('badgeFa', 0, 0, false);
+      }
+
+      // Centro di massa: piccolo punto dorato
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.arc(cmX, cmY, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    /* Aggiorna coordinate e visibilità degli elementi LaTeX overlay */
+    function updateBadgePosition(id, x, y, visible) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (!visible) {
+        el.classList.add('hidden');
+        return;
+      }
+      el.classList.remove('hidden');
+      el.style.left = `${Math.round(x)}px`;
+      el.style.top = `${Math.round(y)}px`;
+    }
+
+    /* Compila via KaTeX tutte le etichette vettoriali sul disegno */
+    function initLatexBadges() {
+      if (!window.katex) return;
+      const badges = [
+        { id: 'badgeFp', tex: '\\vec{F}_P' },
+        { id: 'badgeFpar', tex: '\\vec{F}_\\parallel' },
+        { id: 'badgeFperp', tex: '\\vec{F}_\\perp' },
+        { id: 'badgeN', tex: '\\vec{N}' },
+        { id: 'badgeFa', tex: '\\vec{F}_a' },
+        { id: 'badgeThetaBase', tex: '\\theta' },
+        { id: 'badgeThetaForce', tex: '\\theta' }
+      ];
+      badges.forEach(b => {
+        const el = document.getElementById(b.id);
+        if (el) {
+          katex.render(b.tex, el, { throwOnError: false });
+        }
+      });
+    }
+
+    let lastTime = performance.now();
+    function animationLoop(currentTime) {
+      const dt = Math.min((currentTime - lastTime) / 1000, 0.05);
+      lastTime = currentTime;
+
+      if (state.isPlaying && !state.dragTarget) {
+        if (!state.isStatic && state.acceleration > 0) {
+          state.velocity += state.acceleration * dt;
+          const rampLengthMeters = 5.0;
+          const deltaPosRel = (state.velocity * dt) / rampLengthMeters;
+          
+          state.blockRelPos -= deltaPosRel;
+          
+          if (state.blockRelPos <= 0.15) {
+            state.blockRelPos = 0.15;
+            state.velocity = 0;
+            togglePlayPause(false);
+          }
+        }
+      }
+
+      redraw();
+      requestAnimationFrame(animationLoop);
+    }
+
+    // Slider Angolo
+    const sliderAngle = document.getElementById('sliderAngle');
+    sliderAngle.addEventListener('input', (e) => {
+      state.thetaDeg = parseFloat(e.target.value);
+      updatePhysics();
+      redraw();
+    });
+
+    // Slider Massa
+    const sliderMass = document.getElementById('sliderMass');
+    sliderMass.addEventListener('input', (e) => {
+      state.mass = parseFloat(e.target.value);
+      updatePhysics();
+      redraw();
+    });
+
+    // Slider Attrito
+    const sliderMu = document.getElementById('sliderMu');
+    sliderMu.addEventListener('input', (e) => {
+      state.mu = parseFloat(e.target.value);
+      updatePhysics();
+      redraw();
+    });
+
+    function setAnglePreset(angle) {
+      sliderAngle.value = angle;
+      state.thetaDeg = angle;
+      updatePhysics();
+      redraw();
+    }
+
+    function changeGravityPreset() {
+      const val = parseFloat(document.getElementById('selectGravity').value);
+      state.gravity = val;
+      updatePhysics();
+      redraw();
+    }
+
+    function resetSimulation() {
+      state.thetaDeg = 30;
+      state.mass = 10;
+      state.mu = 0.20;
+      state.gravity = 9.81;
+      state.blockRelPos = 0.70;
+      state.velocity = 0;
+      state.isPlaying = false;
+
+      sliderAngle.value = 30;
+      sliderMass.value = 10;
+      sliderMu.value = 0.20;
+      document.getElementById('selectGravity').value = '9.81';
+
+      updatePlayPauseButton();
+      updatePhysics();
+      redraw();
+    }
+
+    function resetBlockPosition() {
+      state.blockRelPos = 0.75;
+      state.velocity = 0;
+      redraw();
+    }
+
+    function togglePlayPause(forceState = null) {
+      state.isPlaying = forceState !== null ? forceState : !state.isPlaying;
+      updatePlayPauseButton();
+    }
+
+    function updatePlayPauseButton() {
+      const btn = document.getElementById('btnPlayPause');
+      const icon = document.getElementById('playIcon');
+      const text = document.getElementById('playText');
+
+      if (state.isPlaying) {
+        icon.innerText = '⏸';
+        text.innerText = 'Pausa';
+        btn.className = 'px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold shadow-lg shadow-amber-600/30 flex items-center gap-1.5 transition';
+      } else {
+        icon.innerText = '▶';
+        text.innerText = 'Test Moto';
+        btn.className = 'px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold shadow-lg shadow-blue-600/30 flex items-center gap-1.5 transition';
+      }
+    }
+
+    /* Gestione Tab didattici */
+    function switchTab(tabIndex) {
+      for (let i = 1; i <= 3; i++) {
+        const content = document.getElementById(`tabContent${i}`);
+        const btn = document.getElementById(`tabBtn${i}`);
+        if (i === tabIndex) {
+          content.classList.remove('hidden');
+          btn.className = 'flex-1 py-3 px-3 text-center border-b-2 border-blue-500 text-blue-400 bg-slate-900/60 transition';
+        } else {
+          content.classList.add('hidden');
+          btn.className = 'flex-1 py-3 px-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition';
+        }
+      }
+      renderLatexEquations();
+    }
+
+    /* Calcolo delle equazioni fisiche e aggiornamento telemetria */
+    function updatePhysics() {
+      const thetaRad = state.thetaDeg * (Math.PI / 180);
+      state.weight = state.mass * state.gravity;
+      state.pParallel = state.weight * Math.sin(thetaRad);
+      state.pPerp = state.weight * Math.cos(thetaRad);
+      state.normal = state.pPerp;
+
+      // Attrito statico / dinamico
+      const fMax = state.mu * state.normal;
+      if (state.pParallel > fMax) {
+        state.friction = fMax;
+        state.acceleration = (state.pParallel - fMax) / state.mass;
+        state.isStatic = false;
+      } else {
+        state.friction = state.pParallel;
+        state.acceleration = 0;
+        state.isStatic = true;
+      }
+
+      // Aggiornamento telemetria numerica
+      const elValP = document.getElementById('valP');
+      const elValPpar = document.getElementById('valPpar');
+      const elValPperp = document.getElementById('valPperp');
+      const elValAcc = document.getElementById('valAcc');
+      const elAngleRad = document.getElementById('lblAngleRad');
+      const elFricStatus = document.getElementById('frictionStatus');
+
+      if (elValP) elValP.innerText = `${state.weight.toFixed(1)} N`;
+      if (elValPpar) elValPpar.innerText = `${state.pParallel.toFixed(1)} N`;
+      if (elValPperp) elValPperp.innerText = `${state.pPerp.toFixed(1)} N`;
+      if (elValAcc) elValAcc.innerText = `${state.acceleration.toFixed(2)} m/s²`;
+      if (elAngleRad) elAngleRad.innerText = thetaRad.toFixed(2);
+
+      const elAngleMath = document.getElementById('lblAngleMath');
+      const elMassMath = document.getElementById('lblMassMath');
+      const elMuMath = document.getElementById('lblMuMath');
+
+      if (window.katex) {
+        if (elAngleMath) katex.render(`\\theta = ${state.thetaDeg.toFixed(1)}^\\circ`, elAngleMath, { throwOnError: false });
+        if (elMassMath) katex.render(`m = ${state.mass.toFixed(0)}\\text{ kg}`, elMassMath, { throwOnError: false });
+        if (elMuMath) katex.render(`\\mu = ${state.mu.toFixed(2)}`, elMuMath, { throwOnError: false });
+      }
+
+      if (elFricStatus) {
+        if (state.isStatic) {
+          elFricStatus.innerText = 'Equilibrio statico';
+          elFricStatus.className = 'text-[11px] px-2 py-0.5 rounded font-medium bg-emerald-950 text-emerald-400 border border-emerald-800/40';
+        } else {
+          elFricStatus.innerText = 'In moto (scivola)';
+          elFricStatus.className = 'text-[11px] px-2 py-0.5 rounded font-medium bg-red-950 text-red-400 border border-red-800/40';
+        }
+      }
+    }
+
+    /* Compilazione LaTeX in tutta la pagina */
+    function renderLatexEquations() {
+      if (window.renderMathInElement) {
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    /* Gestione ridimensionamento canvas con supporto display Retina/HiDPI */
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      redraw();
+    }
+
+    function getPointerPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return {
+        x: clientX - rect.x,
+        y: clientY - rect.y
+      };
+    }
+
+    function isPointerNearBlock(pos) {
+      if (!state.blockCenter) return false;
+      const dx = pos.x - state.blockCenter.x;
+      const dy = pos.y - state.blockCenter.y;
+      return Math.hypot(dx, dy) < state.blockCenter.radius * 1.3;
+    }
+
+    function isPointerNearAngleVertex(pos) {
+      if (!state.angleVertex) return false;
+      const dx = pos.x - state.angleVertex.x;
+      const dy = pos.y - state.angleVertex.y;
+      return Math.hypot(dx, dy) < state.angleVertex.radius * 1.6;
+    }
+
+    /* Gestione dinamica degli input mouse e touch per angolo e blocco */
+    function handlePointerStart(pos) {
+      if (isPointerNearAngleVertex(pos)) {
+        state.dragTarget = 'angle';
+        return true;
+      } else if (isPointerNearBlock(pos)) {
+        state.dragTarget = 'block';
+        state.velocity = 0;
+        state.isPlaying = false;
+        updatePlayPauseButton();
+        return true;
+      }
+      return false;
+    }
+
+    function handlePointerMove(pos) {
+      const rect = canvas.getBoundingClientRect();
+      const marginX = rect.width * 0.08;
+      const marginY = rect.height * 0.12;
+      const baseLeftX = marginX;
+      const baseFloorY = rect.height - marginY;
+      const baseLen = rect.width * 0.82;
+
+      if (state.dragTarget === 'angle') {
+        // Calcola dinamicamente l'angolo theta in base alla posizione trascinata
+        const deltaX = Math.max(20, pos.x - baseLeftX);
+        const deltaY = Math.max(0, baseFloorY - pos.y);
+        const newAngleRad = Math.atan2(deltaY, deltaX);
+        let newAngleDeg = newAngleRad * (180 / Math.PI);
+        newAngleDeg = Math.max(0, Math.min(80, newAngleDeg));
+        
+        state.thetaDeg = parseFloat(newAngleDeg.toFixed(1));
+        sliderAngle.value = state.thetaDeg;
+        updatePhysics();
+        redraw();
+      } else if (state.dragTarget === 'block') {
+        const clampedX = Math.max(marginX, Math.min(marginX + baseLen, pos.x));
+        state.blockRelPos = (clampedX - marginX) / baseLen;
+        redraw();
+      } else {
+        // Modifica cursore al passaggio
+        if (isPointerNearAngleVertex(pos)) {
+          canvas.style.cursor = 'ns-resize';
+        } else if (isPointerNearBlock(pos)) {
+          canvas.style.cursor = 'grab';
+        } else {
+          canvas.style.cursor = 'default';
+        }
+      }
+    }
+
+    function handlePointerEnd() {
+      state.dragTarget = null;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      handlePointerStart(getPointerPos(e));
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      handlePointerMove(getPointerPos(e));
+    });
+
+    window.addEventListener('mouseup', handlePointerEnd);
+
+    canvas.addEventListener('touchstart', (e) => {
+      const pos = getPointerPos(e);
+      if (handlePointerStart(pos)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (state.dragTarget) {
+        handlePointerMove(getPointerPos(e));
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', handlePointerEnd);
+
+    window.addEventListener('load', () => {
+      resizeCanvas();
+      initLatexBadges();
+      updatePhysics();
+      renderLatexEquations();
+      requestAnimationFrame(animationLoop);
+    });
+
+    window.addEventListener('resize', () => {
+      resizeCanvas();
+    });
+  </script>
+</body>
+</html>
