@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Angoli Associati - Circonferenza Goniometrica</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX for crisp mathematical notation -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <!-- Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            cosLen: '#3b82f6', // Blu per la misura pari a cos(α)
+            sinLen: '#ec4899', // Rosa/Magenta per la misura pari a sin(α)
+            alphaCol: '#f59e0b', // Ambra per angolo α
+            assocCol: '#8b5cf6', // Viola per angolo associato
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    .custom-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    .badge-glow {
+      box-shadow: 0 0 15px currentColor;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 18px;
+      width: 18px;
+      border-radius: 50%;
+      background: #4f46e5;
+      cursor: pointer;
+      margin-top: -5px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 8px;
+      cursor: pointer;
+      background: #e2e8f0;
+      border-radius: 9999px;
+    }
+    .canvas-container {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white shadow-md">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="M12 3v9l6 4"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">Angoli Associati</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Creato da Petr Ushakov con l'ausilio dell'IA</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          Metodo Geometrico
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT COLUMN: Canvas & Visual Representation -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm flex flex-col items-center relative overflow-hidden">
+        
+        <!-- Legend bar -->
+        <div class="w-full flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-100 text-xs">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-1.5 font-medium text-slate-700">
+              <span class="w-3.5 h-3.5 rounded-md bg-blue-500 inline-block shadow-sm"></span>
+              <span>Lunghezza <strong class="text-blue-700 font-normal"><span class="latex-holder">$|\cos\alpha|$</span></strong></span>
+            </div>
+            <div class="flex items-center gap-1.5 font-medium text-slate-700">
+              <span class="w-3.5 h-3.5 rounded-md bg-pink-500 inline-block shadow-sm"></span>
+              <span>Lunghezza <strong class="text-pink-700 font-normal"><span class="latex-holder">$|\sin\alpha|$</span></strong></span>
+            </div>
+          </div>
+          <span class="text-slate-500 font-medium text-xs latex-holder">$R = 1$</span>
+        </div>
+
+        <!-- Interactive Canvas Container -->
+        <div class="relative w-full aspect-square max-w-[500px] flex items-center justify-center canvas-container">
+          <canvas id="trigCanvas" class="w-full h-full rounded-xl bg-slate-50 border border-slate-100 cursor-crosshair"></canvas>
+          <!-- HTML / KaTeX Overlay for mathematical labels on the circle -->
+          <div id="canvasOverlay" class="absolute inset-0 pointer-events-none select-none"></div>
+        </div>
+
+        <!-- Key visual insight banner -->
+        <div id="insightBanner" class="w-full mt-4 p-3.5 rounded-xl bg-indigo-50/80 border border-indigo-100 flex items-start gap-3 text-xs sm:text-sm text-indigo-950">
+          <svg class="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a1.5 1.5 0 011.5-1.5h1.5a1.5 1.5 0 011.5 1.5V18m-4.5-5.25a1.5 1.5 0 00-1.5-1.5H7.5A1.5 1.5 0 006 12.75V18m6 0a3 3 0 003 3h3a3 3 0 003-3m-6 0a3 3 0 01-3 3H6a3 3 0 01-3-3"></path>
+          </svg>
+          <div id="insightText" class="leading-relaxed">
+            <!-- Will be dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="lg:col-span-5 flex flex-col gap-5">
+      
+      <!-- CONTROLS CARD -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col gap-5">
+        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+          <span>Configurazione Angolo</span>
+          <span class="text-xs font-normal text-slate-500">Seleziona e osserva</span>
+        </h2>
+
+        <!-- Target Function Selector: sin / cos -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Funzione Obiettivo</label>
+          <div class="grid grid-cols-2 p-1 bg-slate-100 rounded-xl">
+            <button id="btnSin" onclick="setFunction('sin')" class="py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-indigo-600">
+              seno (<span class="latex-holder">$\sin$</span>)
+            </button>
+            <button id="btnCos" onclick="setFunction('cos')" class="py-2.5 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:text-slate-900">
+              coseno (<span class="latex-holder">$\cos$</span>)
+            </button>
+          </div>
+        </div>
+
+        <!-- Reference Angle Selector: 0, π/2, π -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Angolo di partenza</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button id="btnBase0" onclick="setBaseAngle(0)" class="py-2 px-3 rounded-xl border border-slate-200 hover:border-indigo-400 font-semibold text-slate-700 transition-all flex flex-col items-center">
+              <span class="text-[11px] text-slate-400 font-normal">Origine</span>
+              <span class="text-base font-medium py-0.5" id="texBase0">$0$</span>
+            </button>
+            <button id="btnBasePiHalf" onclick="setBaseAngle(Math.PI / 2)" class="py-2 px-3 rounded-xl border border-indigo-600 bg-indigo-50/50 text-indigo-700 font-semibold transition-all flex flex-col items-center shadow-xs">
+              <span class="text-[11px] text-indigo-500 font-normal">Verticale</span>
+              <span class="text-base font-medium py-0.5" id="texBasePiHalf">$\frac{\pi}{2}$</span>
+            </button>
+            <button id="btnBasePi" onclick="setBaseAngle(Math.PI)" class="py-2 px-3 rounded-xl border border-slate-200 hover:border-indigo-400 font-semibold text-slate-700 transition-all flex flex-col items-center">
+              <span class="text-[11px] text-slate-400 font-normal">Piatto</span>
+              <span class="text-base font-medium py-0.5" id="texBasePi">$\pi$</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Sign Selector: + or - -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Operazione con <span class="latex-holder">$\alpha$</span></label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="btnSignMinus" onclick="setSign(-1)" class="py-2.5 px-3 rounded-xl border border-indigo-600 bg-indigo-50/60 text-indigo-700 font-bold transition-all flex items-center justify-center gap-2">
+              <span class="latex-holder text-base">$-\,\alpha$</span> <span class="text-[11px] font-medium text-slate-500">(orario)</span>
+            </button>
+            <button id="btnSignPlus" onclick="setSign(1)" class="py-2.5 px-3 rounded-xl border border-slate-200 hover:border-indigo-400 text-slate-700 font-bold transition-all flex items-center justify-center gap-2">
+              <span class="latex-holder text-base">$+\,\alpha$</span> <span class="text-[11px] font-medium text-slate-500">(antiorario)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Slider for base angle alpha (default ~20°) -->
+        <div class="pt-2 border-t border-slate-100">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-semibold text-slate-700">Ampiezza angolo <span class="latex-holder text-amber-600 font-semibold">$\alpha$</span>:</span>
+            <span id="alphaDegDisplay" class="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded">20°</span>
+          </div>
+          <input id="alphaSlider" type="range" min="10" max="50" step="1" value="20" class="w-full accent-indigo-600" oninput="onAlphaChange(this.value)">
+          <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+            <span class="latex-holder">$10^\circ$</span>
+            <span class="latex-holder">$\alpha \approx 20^\circ$ (ottimale)</span>
+            <span class="latex-holder">$50^\circ$</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-sm flex flex-col gap-4">
+        <h2 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center justify-between">
+          <span>Deduzione Geometrica</span>
+          <span class="text-xs font-medium text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md border border-indigo-100" id="badgeRelationName">Complementari</span>
+        </h2>
+
+        <!-- Main formula display -->
+        <div class="p-4 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 text-white flex flex-col items-center justify-center text-center shadow-md">
+          <div class="text-xs text-indigo-200 uppercase tracking-wider font-semibold mb-1">Formula risultante</div>
+          <div id="targetFormulaKatex" class="text-2xl sm:text-3xl font-bold py-2 overflow-x-auto max-w-full">
+            <!-- Rendered by KaTeX -->
+          </div>
+        </div>
+
+        <!-- Step-by-step breakdown -->
+        <div class="space-y-3 text-xs sm:text-sm">
+          <!-- Step 1: Geometry swap or keep -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+            <div>
+              <div class="font-semibold text-slate-800" id="step1Title">Scambio o conservazione dei cateti?</div>
+              <p class="text-slate-600 mt-0.5 leading-relaxed" id="step1Desc">
+                Poiché si parte da <strong>π/2</strong> (asse verticale), il triangolo rettangolo ruota di 90°: il cateto verticale diventa orizzontale e viceversa. 
+                Quindi la funzione <strong>si scambia</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Step 2: Quadrant and sign -->
+          <div class="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+            <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+            <div>
+              <div class="font-semibold text-slate-800" id="step2Title">Segno del quadrante</div>
+              <p class="text-slate-600 mt-0.5 leading-relaxed" id="step2Desc">
+                L'angolo associato cade nel <strong>I Quadrante</strong>. Qui il seno è <strong>positivo (+)</strong> e il coseno è <strong>positivo (+)</strong>.
+              </p>
+            </div>
+          </div>
+
+          <!-- Segment equality cards with matching colors -->
+          <div class="p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 flex flex-col gap-2">
+            <div class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Confronto dei segmenti (stesso valore = stesso colore):</div>
+            
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div class="p-2.5 rounded-lg bg-blue-50 border border-blue-200 flex flex-col">
+                <span class="text-blue-800 font-semibold flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> 
+                  <span>Cateto lungo</span>
+                </span>
+                <span class="text-slate-700 text-xs mt-1.5 font-medium" id="segLongDesc">
+                  <!-- Rendered dynamically as LaTeX -->
+                </span>
+              </div>
+              <div class="p-2.5 rounded-lg bg-pink-50 border border-pink-200 flex flex-col">
+                <span class="text-pink-800 font-semibold flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span> 
+                  <span>Cateto corto</span>
+                </span>
+                <span class="text-slate-700 text-xs mt-1.5 font-medium" id="segShortDesc">
+                  <!-- Rendered dynamically as LaTeX -->
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+
+  <footer class="max-w-7xl mx-auto w-full px-4 sm:px-6 py-4 text-center text-xs text-slate-500 border-t border-slate-200">
+    <div class="latex-holder leading-relaxed">
+      Regola geometrica: con $0$ e $\pi$ la funzione <strong>non cambia</strong>; con $\frac{\pi}{2}$ la funzione <strong>si scambia</strong> ($\sin \longleftrightarrow \cos$). Il segno ($\pm$) è determinato dal quadrante di destinazione.
+    </div>
+  </footer>
+
+  <script>
+    // State of the application
+    const state = {
+      targetFunction: 'sin', // 'sin' | 'cos'
+      baseAngle: Math.PI / 2, // 0, Math.PI / 2, Math.PI
+      sign: -1, // +1 or -1
+      alphaDeg: 20, // default 20 degrees
+    };
+
+    // Color Palette Constants
+    const COLORS = {
+      cosLen: '#3b82f6', // Blue for magnitude equal to cos(alpha) (the longer segment)
+      cosLenLight: 'rgba(59, 130, 246, 0.15)',
+      sinLen: '#ec4899', // Pink for magnitude equal to sin(alpha) (the shorter segment)
+      sinLenLight: 'rgba(236, 72, 153, 0.15)',
+      alphaRay: '#f59e0b', // Amber
+      assocRay: '#8b5cf6', // Violet
+      grid: '#e2e8f0',
+      axis: '#64748b',
+      text: '#1e293b'
+    };
+
+    // DOM Elements
+    const canvas = document.getElementById('trigCanvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('canvasOverlay');
+    const alphaSlider = document.getElementById('alphaSlider');
+    const alphaDegDisplay = document.getElementById('alphaDegDisplay');
+
+    // Helper to batch-render all LaTeX in a container
+    function renderLatexIn(container = document.body) {
+      if (window.renderMathInElement) {
+        renderMathInElement(container, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function setupCanvasDpi() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.resetTransform?.();
+      ctx.scale(dpr, dpr);
+    }
+
+    window.addEventListener('resize', () => {
+      setupCanvasDpi();
+      render();
+    });
+
+    // Helper to calculate associated angle in standard [0, 2pi) range
+    function getAssociatedAngle() {
+      const alphaRad = (state.alphaDeg * Math.PI) / 180;
+      let angle = state.baseAngle + state.sign * alphaRad;
+      // normalize to [0, 2*PI)
+      angle = angle % (2 * Math.PI);
+      if (angle < 0) angle += 2 * Math.PI;
+      return angle;
+    }
+
+    function setFunction(fn) {
+      state.targetFunction = fn;
+      document.getElementById('btnSin').className = fn === 'sin' 
+        ? 'py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-indigo-600'
+        : 'py-2.5 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:text-slate-900';
+      document.getElementById('btnCos').className = fn === 'cos' 
+        ? 'py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm bg-white text-indigo-600'
+        : 'py-2.5 rounded-lg text-sm font-semibold transition-all text-slate-600 hover:text-slate-900';
+      updateUI();
+    }
+
+    function setBaseAngle(val) {
+      state.baseAngle = val;
+      const activeClass = 'py-2.5 px-3 rounded-xl border border-indigo-600 bg-indigo-50/50 text-indigo-700 font-semibold transition-all flex flex-col items-center shadow-xs';
+      const inactiveClass = 'py-2.5 px-3 rounded-xl border border-slate-200 hover:border-indigo-400 font-semibold text-slate-700 transition-all flex flex-col items-center';
+
+      document.getElementById('btnBase0').className = Math.abs(val - 0) < 0.01 ? activeClass : inactiveClass;
+      document.getElementById('btnBasePiHalf').className = Math.abs(val - Math.PI / 2) < 0.01 ? activeClass : inactiveClass;
+      document.getElementById('btnBasePi').className = Math.abs(val - Math.PI) < 0.01 ? activeClass : inactiveClass;
+
+      updateUI();
+    }
+
+    function setSign(s) {
+      state.sign = s;
+      const activeClass = 'py-2.5 px-4 rounded-xl border border-indigo-600 bg-indigo-50/60 text-indigo-700 font-bold text-lg transition-all flex items-center justify-center gap-2';
+      const inactiveClass = 'py-2.5 px-4 rounded-xl border border-slate-200 hover:border-indigo-400 text-slate-700 font-bold text-lg transition-all flex items-center justify-center gap-2';
+
+      document.getElementById('btnSignMinus').className = s === -1 ? activeClass : inactiveClass;
+      document.getElementById('btnSignPlus').className = s === 1 ? activeClass : inactiveClass;
+
+      updateUI();
+    }
+
+    function onAlphaChange(val) {
+      state.alphaDeg = parseFloat(val);
+      alphaDegDisplay.innerText = state.alphaDeg + '°';
+      updateUI();
+    }
+
+    function computeDeduction() {
+      const alphaRad = (state.alphaDeg * Math.PI) / 180;
+      const assocRad = state.baseAngle + state.sign * alphaRad;
+      
+      const cosA = Math.cos(alphaRad);
+      const sinA = Math.sin(alphaRad);
+
+      const cosAssoc = Math.cos(assocRad);
+      const sinAssoc = Math.sin(assocRad);
+
+      // Base angle string for LaTeX
+      let baseStr = "0";
+      let baseName = "0";
+      let baseTex = "0";
+      if (Math.abs(state.baseAngle - Math.PI / 2) < 0.01) {
+        baseStr = "\\frac{\\pi}{2}";
+        baseName = "π/2";
+        baseTex = "\\frac{\\pi}{2}";
+      } else if (Math.abs(state.baseAngle - Math.PI) < 0.01) {
+        baseStr = "\\pi";
+        baseName = "π";
+        baseTex = "\\pi";
+      }
+
+      const signStr = state.sign === 1 ? "+" : "-";
+      let angleExpression = `${baseStr} ${signStr} \\alpha`;
+      if (baseStr === "0") {
+        angleExpression = state.sign === 1 ? "\\alpha" : "-\\alpha";
+      }
+
+      // Relation name with LaTeX formatting
+      let relName = "Angoli Associati";
+      if (baseStr === "\\frac{\\pi}{2}" && signStr === "-") relName = "Complementari $\\left(\\frac{\\pi}{2}-\\alpha\\right)$";
+      else if (baseStr === "\\frac{\\pi}{2}" && signStr === "+") relName = "Che differiscono di $\\frac{\\pi}{2}$";
+      else if (baseStr === "\\pi" && signStr === "-") relName = "Supplementari $(\\pi-\\alpha)$";
+      else if (baseStr === "\\pi" && signStr === "+") relName = "Che differiscono di $\\pi$";
+      else if (baseStr === "0" && signStr === "-") relName = "Opposti $(-\\alpha)$";
+
+      // Determines if triangle is rotated (swapped function) or not
+      const isSwapped = Math.abs(state.baseAngle - Math.PI / 2) < 0.01;
+
+      // Result for sin and cos
+      let targetSign, targetFuncRef;
+      if (state.targetFunction === 'sin') {
+        if (!isSwapped) {
+          targetFuncRef = "\\sin(\\alpha)";
+          targetSign = Math.sign(sinAssoc) >= 0 ? "+" : "-";
+        } else {
+          targetFuncRef = "\\cos(\\alpha)";
+          targetSign = Math.sign(sinAssoc) >= 0 ? "+" : "-";
+        }
+      } else {
+        if (!isSwapped) {
+          targetFuncRef = "\\cos(\\alpha)";
+          targetSign = Math.sign(cosAssoc) >= 0 ? "+" : "-";
+        } else {
+          targetFuncRef = "\\sin(\\alpha)";
+          targetSign = Math.sign(cosAssoc) >= 0 ? "+" : "-";
+        }
+      }
+
+      const signPrefix = targetSign === "-" ? "-" : "";
+      const fullFormula = `\\${state.targetFunction}\\left(${angleExpression}\\right) = ${signPrefix}${targetFuncRef}`;
+
+      // Determine quadrant of associated angle
+      let norm = assocRad % (2 * Math.PI);
+      if (norm < 0) norm += 2 * Math.PI;
+      let quad = "I Quadrante";
+      if (norm >= 0 && norm <= Math.PI / 2 + 1e-4) quad = "I Quadrante";
+      else if (norm > Math.PI / 2 && norm <= Math.PI + 1e-4) quad = "II Quadrante";
+      else if (norm > Math.PI && norm <= 1.5 * Math.PI + 1e-4) quad = "III Quadrante";
+      else quad = "IV Quadrante";
+
+      return {
+        baseStr,
+        baseName,
+        baseTex,
+        signStr,
+        angleExpression,
+        relName,
+        isSwapped,
+        fullFormula,
+        quad,
+        cosA,
+        sinA,
+        cosAssoc,
+        sinAssoc,
+        targetSign,
+        targetFuncRef
+      };
+    }
+
+    function updateUI() {
+      const deduction = computeDeduction();
+
+      // Main resulting formula rendered with KaTeX
+      katex.render(deduction.fullFormula, document.getElementById('targetFormulaKatex'), {
+        displayMode: true,
+        throwOnError: false
+      });
+
+      // Relation name badge
+      const badgeElem = document.getElementById('badgeRelationName');
+      badgeElem.innerHTML = deduction.relName;
+      renderLatexIn(badgeElem);
+
+      // Step 1 Text
+      const step1Title = document.getElementById('step1Title');
+      const step1Desc = document.getElementById('step1Desc');
+      if (deduction.isSwapped) {
+        step1Title.innerHTML = `Partenza da $${deduction.baseTex}$: <strong>la funzione si scambia!</strong>`;
+        step1Desc.innerHTML = `L'angolo parte dall'asse verticale ($${deduction.baseTex}$), quindi il triangolo rettangolo ruota: la proiezione orizzontale assume lunghezza $|\sin\\alpha|$ (rosa) e la proiezione verticale assume lunghezza $|\cos\\alpha|$ (blu). Di conseguenza $\\${state.targetFunction} \\longleftrightarrow ${state.targetFunction === 'sin' ? '\\cos' : '\\sin'}$.`;
+      } else {
+        step1Title.innerHTML = `Partenza da $${deduction.baseTex}$: <strong>la funzione NON cambia!</strong>`;
+        step1Desc.innerHTML = `L'angolo parte dall'asse orizzontale ($${deduction.baseTex}$), quindi l'orientamento dei cateti rimane inalterato: il coseno misura $|\cos\\alpha|$ (blu) e il seno misura $|\sin\\alpha|$ (rosa). Di conseguenza la funzione rimane $\\${state.targetFunction}$.`;
+      }
+      renderLatexIn(step1Title);
+      renderLatexIn(step1Desc);
+
+      // Step 2 Text
+      const step2Title = document.getElementById('step2Title');
+      const step2Desc = document.getElementById('step2Desc');
+      const chosenCoord = state.targetFunction === 'sin' ? 'y \\text{ (seno)}' : 'x \\text{ (coseno)}';
+      const chosenSignTex = deduction.targetSign === '+' ? '+' : '-';
+      const chosenSignWord = deduction.targetSign === '+' ? 'positivo ($+$)' : 'negativo ($-$)';
+
+      step2Title.innerHTML = `Segno nel <strong>${deduction.quad}</strong>`;
+      step2Desc.innerHTML = `Nel ${deduction.quad}, la coordinata $${chosenCoord}$ è ${chosenSignWord}. Quindi il segno finale davanti all'uguaglianza è <strong>$${chosenSignTex}$</strong>.`;
+      renderLatexIn(step2Title);
+      renderLatexIn(step2Desc);
+
+      // Value descriptions for segment comparison cards
+      const segLongDesc = document.getElementById('segLongDesc');
+      const segShortDesc = document.getElementById('segShortDesc');
+      segLongDesc.innerHTML = `$|\\cos\\alpha| \\approx ${deduction.cosA.toFixed(2)}$`;
+      segShortDesc.innerHTML = `$|\\sin\\alpha| \\approx ${deduction.sinA.toFixed(2)}$`;
+      renderLatexIn(segLongDesc);
+      renderLatexIn(segShortDesc);
+
+      // Insight banner explanation with compiled formulas
+      const insightContainer = document.getElementById('insightText');
+      if (state.targetFunction === 'sin') {
+        if (!deduction.isSwapped) {
+          insightContainer.innerHTML = `Osserva il cateto verticale (seno): sia per $\\alpha$ sia per l'angolo associato ha la <strong>stessa altezza rosa ($|\\sin\\alpha|$)</strong>. Stesso colore $=$ stesso valore assoluto: $\\sin(${deduction.angleExpression}) = ${deduction.targetSign === '-' ? '-' : ''}\\sin(\\alpha)$.`;
+        } else {
+          insightContainer.innerHTML = `Osserva il cateto verticale (seno) dell'angolo associato: ha esattamente la stessa misura del <strong>cateto orizzontale blu ($|\\cos\\alpha|$)</strong> di $\\alpha$. Ecco la ragione geometrica di $\\sin(${deduction.angleExpression}) = ${deduction.targetSign === '-' ? '-' : ''}\\cos(\\alpha)$!`;
+        }
+      } else {
+        if (!deduction.isSwapped) {
+          insightContainer.innerHTML = `Osserva il cateto orizzontale (coseno): sia per $\\alpha$ sia per l'angolo associato ha la <strong>stessa lunghezza blu ($|\\cos\\alpha|$)</strong>: $\\cos(${deduction.angleExpression}) = ${deduction.targetSign === '-' ? '-' : ''}\\cos(\\alpha)$.`;
+        } else {
+          insightContainer.innerHTML = `Osserva il cateto orizzontale (coseno) dell'angolo associato: ha esattamente la stessa misura dell'<strong>altezza rosa ($|\\sin\\alpha|$)</strong> di $\\alpha$: $\\cos(${deduction.angleExpression}) = ${deduction.targetSign === '-' ? '-' : ''}\\sin(\\alpha)$!`;
+        }
+      }
+      renderLatexIn(insightContainer);
+
+      render();
+    }
+
+    function render() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = rect.height;
+      if (width === 0 || height === 0) return;
+
+      ctx.clearRect(0, 0, width, height);
+
+      const cx = width / 2;
+      const cy = height / 2;
+      const radius = Math.min(width, height) * 0.38;
+
+      const alphaRad = (state.alphaDeg * Math.PI) / 180;
+      const assocRad = state.baseAngle + state.sign * alphaRad;
+
+      // Coordinate grid lines
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.beginPath();
+      for (let i = -1; i <= 1; i += 0.5) {
+        if (i === 0) continue;
+        ctx.moveTo(cx + i * radius, cy - radius - 15);
+        ctx.lineTo(cx + i * radius, cy + radius + 15);
+        ctx.moveTo(cx - radius - 15, cy + i * radius);
+        ctx.lineTo(cx + radius + 15, cy + i * radius);
+      }
+      ctx.stroke();
+
+      // Main Axes
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = COLORS.axis;
+      ctx.beginPath();
+      ctx.moveTo(25, cy);
+      ctx.lineTo(width - 25, cy);
+      ctx.moveTo(cx, height - 25);
+      ctx.lineTo(cx, 25);
+      ctx.stroke();
+
+      // Arrow heads
+      drawArrowHead(ctx, width - 25, cy, 0);
+      drawArrowHead(ctx, cx, 25, -Math.PI / 2);
+
+      // Unit Circle
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      // Canonical angles markers (dots on circle)
+      const specialAngles = [0, Math.PI / 2, Math.PI];
+      specialAngles.forEach(ang => {
+        const px = cx + radius * Math.cos(-ang);
+        const py = cy + radius * Math.sin(-ang);
+        const isBaseChosen = Math.abs(state.baseAngle - ang) < 0.01;
+        ctx.beginPath();
+        ctx.arc(px, py, isBaseChosen ? 5.5 : 3.5, 0, 2 * Math.PI);
+        ctx.fillStyle = isBaseChosen ? '#4f46e5' : '#94a3b8';
+        ctx.fill();
+        if (isBaseChosen) {
+          ctx.lineWidth = 2;
+          ctx.strokeStyle = '#c7d2fe';
+          ctx.stroke();
+        }
+      });
+
+      const cosA = Math.cos(alphaRad);
+      const sinA = Math.sin(alphaRad);
+      const pAlpha = {
+        x: cx + radius * cosA,
+        y: cy - radius * sinA
+      };
+
+      // Shaded triangle for alpha
+      ctx.fillStyle = 'rgba(245, 158, 11, 0.08)';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(pAlpha.x, cy);
+      ctx.lineTo(pAlpha.x, pAlpha.y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Arc for alpha angle
+      ctx.beginPath();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLORS.alphaRay;
+      ctx.arc(cx, cy, 32, 0, -alphaRad, true);
+      ctx.stroke();
+
+      // Alpha Ray
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = COLORS.alphaRay;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(pAlpha.x, pAlpha.y);
+      ctx.stroke();
+
+      // Point P on alpha
+      ctx.fillStyle = COLORS.alphaRay;
+      ctx.beginPath();
+      ctx.arc(pAlpha.x, pAlpha.y, 4.5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Triangle legs for alpha:
+      // Horizontal is cos(alpha) -> Blue
+      drawSegmentWithThickness(cx, cy, pAlpha.x, cy, COLORS.cosLen, 3.5);
+      // Vertical is sin(alpha) -> Pink
+      drawSegmentWithThickness(pAlpha.x, cy, pAlpha.x, pAlpha.y, COLORS.sinLen, 3.5);
+
+      const cosB = Math.cos(assocRad);
+      const sinB = Math.sin(assocRad);
+      const pBeta = {
+        x: cx + radius * cosB,
+        y: cy - radius * sinB
+      };
+
+      // Shaded triangle for associated angle
+      ctx.fillStyle = 'rgba(139, 92, 246, 0.08)';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(pBeta.x, cy);
+      ctx.lineTo(pBeta.x, pBeta.y);
+      ctx.closePath();
+      ctx.fill();
+
+      // Arc for associated angle
+      ctx.beginPath();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = COLORS.assocCol;
+      ctx.arc(cx, cy, 48, 0, -assocRad, true);
+      ctx.stroke();
+
+      // Ray for associated angle
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = COLORS.assocCol;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(pBeta.x, pBeta.y);
+      ctx.stroke();
+
+      // Point P' dot
+      ctx.fillStyle = COLORS.assocCol;
+      ctx.beginPath();
+      ctx.arc(pBeta.x, pBeta.y, 5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      const isSwapped = Math.abs(state.baseAngle - Math.PI / 2) < 0.01;
+      const horizColor = isSwapped ? COLORS.sinLen : COLORS.cosLen;
+      const vertColor = isSwapped ? COLORS.cosLen : COLORS.sinLen;
+
+      const isTargetHoriz = state.targetFunction === 'cos';
+      const isTargetVert = state.targetFunction === 'sin';
+
+      // Associated triangle legs
+      drawSegmentWithThickness(cx, cy, pBeta.x, cy, horizColor, isTargetHoriz ? 5 : 3, isTargetHoriz);
+      drawSegmentWithThickness(pBeta.x, cy, pBeta.x, pBeta.y, vertColor, isTargetVert ? 5 : 3, isTargetVert);
+
+      // Dotted projection
+      ctx.save();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(pBeta.x, pBeta.y);
+      ctx.lineTo(cx, pBeta.y);
+      ctx.stroke();
+
+      if (isTargetVert) {
+        ctx.restore();
+        drawSegmentWithThickness(cx, cy, cx, pBeta.y, vertColor, 4, true);
+        ctx.save();
+      }
+      ctx.restore();
+
+      // Right angle indicators
+      drawRightAngleMarker(cx, cy, pAlpha.x, cy, pAlpha.y);
+      drawRightAngleMarker(cx, cy, pBeta.x, cy, pBeta.y);
+
+      renderCanvasLatexOverlay({
+        cx, cy, radius, pAlpha, pBeta, cosB, sinB, alphaRad
+      });
+    }
+
+    // Function to place compiled LaTeX labels on top of the canvas
+    function renderCanvasLatexOverlay(geom) {
+      const { cx, cy, radius, pAlpha, pBeta, cosB, sinB, alphaRad } = geom;
+
+      overlay.innerHTML = `
+        <!-- Axes Labels -->
+        <div style="position:absolute; left:${cx + radius + 22}px; top:${cy + 12}px; transform:translate(-50%, -50%);" class="text-xs font-semibold text-slate-600 bg-white/80 px-1 py-0.5 rounded shadow-xs">
+          $x = \\cos$
+        </div>
+        <div style="position:absolute; left:${cx - 30}px; top:${28}px; transform:translate(-50%, -50%);" class="text-xs font-semibold text-slate-600 bg-white/80 px-1 py-0.5 rounded shadow-xs">
+          $y = \\sin$
+        </div>
+
+        <!-- Canonical Angle Points -->
+        <div style="position:absolute; left:${cx + radius + 14}px; top:${cy - 12}px; transform:translate(0, -50%);" class="text-xs font-bold ${Math.abs(state.baseAngle - 0) < 0.01 ? 'text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-200 shadow-xs' : 'text-slate-500'}">
+          $0$
+        </div>
+        <div style="position:absolute; left:${cx}px; top:${cy - radius - 18}px; transform:translate(-50%, -50%);" class="text-xs font-bold ${Math.abs(state.baseAngle - Math.PI / 2) < 0.01 ? 'text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-200 shadow-xs' : 'text-slate-500'}">
+          $\\frac{\\pi}{2}$
+        </div>
+        <div style="position:absolute; left:${cx - radius - 16}px; top:${cy - 12}px; transform:translate(-100%, -50%);" class="text-xs font-bold ${Math.abs(state.baseAngle - Math.PI) < 0.01 ? 'text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-200 shadow-xs' : 'text-slate-500'}">
+          $\\pi$
+        </div>
+
+        <!-- Alpha Arc Label -->
+        <div style="position:absolute; left:${cx + 42 * Math.cos(-alphaRad / 2)}px; top:${cy + 42 * Math.sin(-alphaRad / 2)}px; transform:translate(-50%, -50%);" class="text-xs font-bold text-amber-700">
+          $\\alpha$
+        </div>
+
+        <!-- Point P(alpha) Label -->
+        <div style="position:absolute; left:${pAlpha.x + 10}px; top:${pAlpha.y - 12}px; transform:translate(0, -50%);" class="text-xs font-bold text-amber-600 bg-amber-50/90 px-1 rounded border border-amber-200 shadow-xs">
+          $P(\\alpha)$
+        </div>
+
+        <!-- Point P' Label -->
+        <div style="position:absolute; left:${pBeta.x + (cosB >= 0 ? 10 : -10)}px; top:${pBeta.y + (sinB >= 0 ? -12 : 14)}px; transform:translate(${cosB >= 0 ? '0' : '-100%'}, -50%);" class="text-xs font-bold text-violet-700 bg-violet-50/90 px-1.5 py-0.5 rounded border border-violet-200 shadow-xs">
+          $P'$
+        </div>
+      `;
+
+      renderLatexIn(overlay);
+    }
+
+    // Helper: draw segment with thickness and optional glow
+    function drawSegmentWithThickness(x1, y1, x2, y2, color, thickness, hasGlow = false) {
+      ctx.save();
+      if (hasGlow) {
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 10;
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = thickness;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Helper: draw small square right-angle symbol
+    function drawRightAngleMarker(originX, originY, cornerX, cornerY, pointY) {
+      const size = 8;
+      const dirX = Math.sign(originX - cornerX) || 1;
+      const dirY = Math.sign(pointY - cornerY) || 1;
+
+      ctx.save();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cornerX + dirX * size, cornerY);
+      ctx.lineTo(cornerX + dirX * size, cornerY + dirY * size);
+      ctx.lineTo(cornerX, cornerY + dirY * size);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // Helper: draw directional arrow on axes
+    function drawArrowHead(ctx, x, y, radians) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.translate(x, y);
+      ctx.rotate(radians);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(-7, -4);
+      ctx.lineTo(-7, 4);
+      ctx.closePath();
+      ctx.fillStyle = COLORS.axis;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    let isDragging = false;
+
+    function handlePointer(evt) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = evt.clientX || (evt.touches && evt.touches[0].clientX);
+      const clientY = evt.clientY || (evt.touches && evt.touches[0].clientY);
+      if (!clientX || !clientY) return;
+
+      const x = clientX - rect.left - rect.width / 2;
+      const y = -(clientY - rect.top - rect.height / 2);
+
+      let rad = Math.atan2(y, x);
+      if (rad < 0) rad += 2 * Math.PI;
+      let deg = Math.round((rad * 180) / Math.PI);
+
+      // Clamp to a clear representative acute angle range [10, 50]
+      if (deg < 10) deg = 10;
+      if (deg > 55) deg = 55;
+
+      state.alphaDeg = deg;
+      alphaSlider.value = deg;
+      alphaDegDisplay.innerText = deg + '°';
+      updateUI();
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      handlePointer(e);
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (isDragging) handlePointer(e);
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+      isDragging = true;
+      handlePointer(e);
+      e.preventDefault();
+    }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isDragging) {
+        handlePointer(e);
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
+
+    window.addEventListener('load', () => {
+      setupCanvasDpi();
+      renderLatexIn(document.body);
+      updateUI();
+    });
+  </script>
+</body>
+</html>
